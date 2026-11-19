@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/DND.Electrical.Infrastructure/DND.Electrical.Infrastructure.csproj" />
+    <ProjectReference Include="../../samples/DND.Electrical.Plugins.Sample/DND.Electrical.Plugins.Sample.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DND.Electrical.Plugins.Sample</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Contracts are provided by the host at runtime: do not copy them next to the plugin. -->
+    <ProjectReference Include="../../src/DND.Electrical.Plugins/DND.Electrical.Plugins.csproj" Private="false" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>
