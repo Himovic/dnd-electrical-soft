@@ -7,6 +7,8 @@ keywords: settings, theme, accent, language, formats, title block
 ---
 # Customization
 
-Tools ▸ Settings: theme, accent colour, language, beginner/advanced mode, autosave interval, number of backups, grid spacing, ortho default, symbol library folder.
+Tools ▸ Settings — application: theme, accent colour, report language, user name, beginner/advanced mode, autosave interval, number of backups, grid spacing.
 
-Project ▸ Settings: wire number format and mode, device tag format, standard profile, nominal voltage, frequency, earthing system, default sheet format, currency, date format, validation rules.
+Tools ▸ Settings — current project: wire number format and mode, device tag format, nominal voltage, standard profile and the validation rules (enable/disable, severity override).
+
+Project ▸ Properties: project data, status, industry, nominal voltage and earthing system. Project ▸ Company logo sets the logo used in title blocks and reports.

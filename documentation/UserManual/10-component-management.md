@@ -20,4 +20,4 @@ Select a symbol to edit: tag, function text, location, manufacturer, part number
 
 ## Catalogue
 
-Assign a catalogue product to fill manufacturer, part number and dimensions (used by the cabinet layout and BOM). Products marked *demo* are fictional.
+Choose a part number from the catalogue in the **Part number** field: the manufacturer is filled in and the product dimensions are used by the cabinet layout; prices feed the BOM. Products marked *demo* are fictional.

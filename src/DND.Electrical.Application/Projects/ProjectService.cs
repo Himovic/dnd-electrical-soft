@@ -141,10 +141,10 @@ public sealed class ProjectService(
     private async Task SaveToAsync(ProjectSession s, string path, CancellationToken ct)
     {
         if (s.IsReadOnly) throw new InvalidOperationException("The project is open read-only.");
-        if (File.Exists(path)) backups.CreateBackup(path);
+        if (File.Exists(path)) Backups.CreateBackup(path);
         s.Project.Audit("Saved", path);
         await store.SaveAsync(s.Project, path, ct);
-        recovery.Discard(s.Project.Id);
+        Recovery.Discard(s.Project.Id);
         s.MarkSaved();
     }
 
@@ -152,7 +152,7 @@ public sealed class ProjectService(
     {
         var s = Current;
         if (s is null || !s.IsDirty) return;
-        await recovery.WriteAsync(s.Project, s.FilePath, ct);
+        await Recovery.WriteAsync(s.Project, s.FilePath, ct);
         s.LastAutosave = DateTimeOffset.Now;
     }
 
@@ -161,7 +161,7 @@ public sealed class ProjectService(
     {
         if (Current is null) return;
         if (Current.FilePath is not null) locks.Release(Current.FilePath);
-        if (discardRecovery) recovery.Discard(Current.Project.Id);
+        if (discardRecovery) Recovery.Discard(Current.Project.Id);
         Current = null;
         SessionChanged?.Invoke(this, EventArgs.Empty);
     }

@@ -28,7 +28,7 @@ An integrated electrical engineering environment: 2D electrical CAD with real co
 | Backups, locking, autosave/recovery, archives with safe extraction | Implemented | Integration tests |
 | Help center, 27 manual articles, tutorials, documentation administration | Implemented | Integration + UI workflow tests |
 | Plugin host (manifest, version, SHA-256, trust list, permissions) | Implemented | End-to-end test with sample plugin |
-| View models (all UI behaviour) | Implemented | 10 UI workflow tests |
+| View models (all UI behaviour) | Implemented | 11 UI workflow tests |
 | WPF desktop shell | Implemented, compiles | **Not executed in the development environment (Linux).** Must be smoke-tested on Windows |
 | CLI `dnd-electrical` (Windows/Linux/macOS) | Implemented | Used to generate and verify demos and exports |
 | Windows installer | Inno Setup script provided | **Not built** in the development environment |

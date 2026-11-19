@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: ./scripts/build.sh
+      - name: Verify exports with third-party parsers
+        run: |
+          pip install ezdxf pypdf openpyxl
+          dotnet run --project src/DND.Electrical.Cli -c Release -- demo all --out out/demo
+          dotnet run --project src/DND.Electrical.Cli -c Release -- export out/demo/DEMO-IND-001.dndx --format handover --out out/handover
+          python3 scripts/verify-exports.py out/handover
+
+  windows-app:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet build src/DND.Electrical.App -c Release

@@ -96,6 +96,21 @@
                     <StackPanel Margin="6,0,0,0"><TextBlock Text="Standard profile" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Profile}"/></StackPanel>
                 </UniformGrid>
                 <CheckBox Content="Number wires per potential (otherwise per wire)" IsChecked="{Binding PerPotential}" Margin="0,10,0,0" Foreground="{DynamicResource Brush.Text}"/>
+                <TextBlock Text="Validation rules" Style="{StaticResource SectionTitle}" Margin="0,16,0,4"/>
+                <ScrollViewer Height="200" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Rules}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,1">
+                                    <ComboBox DockPanel.Dock="Right" Width="110" ItemsSource="{Binding Severities}" SelectedItem="{Binding Severity}" ToolTip="{Binding DefaultSeverity, StringFormat=Default: {0}}"/>
+                                    <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" Foreground="{DynamicResource Brush.Text}">
+                                        <TextBlock><Run Text="{Binding Id, Mode=OneWay}" FontWeight="SemiBold"/><Run Text=" "/><Run Text="{Binding Title, Mode=OneWay}"/></TextBlock>
+                                    </CheckBox>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </StackPanel>
             <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
         </StackPanel>

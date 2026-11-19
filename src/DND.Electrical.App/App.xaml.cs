@@ -58,6 +58,7 @@ public partial class App : System.Windows.Application
             ApplyTheme(settings.Theme == "Dark", settings.AccentColor);
 
             var plugins = Services.GetRequiredService<PluginManager>();
+            plugins.TrustedHashes.UnionWith(settings.TrustedPluginHashes);
             foreach (var p in plugins.DiscoverAndLoad()) Log.Information("Plugin {Folder}: {State} {Message}", p.Folder, p.State, p.Message);
 
             var main = Services.GetRequiredService<MainWindow>();

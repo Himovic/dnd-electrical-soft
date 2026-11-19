@@ -31,6 +31,7 @@ public sealed class CadCanvas : SKElement
     private readonly SkiaDrawingRenderer _renderer = new();
     private readonly ImageProvider _images = new();
     private Point? _panLast;
+    private Guid? _logoId;
     private bool _fitted;
 
     public CadCanvas()
@@ -88,6 +89,12 @@ public sealed class CadCanvas : SKElement
         var vp = ed.Viewport;
         var m = vp.WorldToScreenMatrix * Matrix2.Scaling(dpi, dpi);
         Func<string, string>? resolver = ed is SchematicEditor se ? FieldResolver.CreateResolver(se.Project, se.Sheet) : null;
+        if (ed is SchematicEditor withLogo && withLogo.Project.Info.CompanyLogoAttachmentId is { } logoId && logoId != _logoId)
+        {
+            _logoId = logoId;
+            var bytes = withLogo.Project.Attachments.FirstOrDefault(a => a.Id == logoId)?.Content;
+            if (bytes is { Length: > 0 }) _images.Register(ImageProvider.CompanyLogoKey, () => bytes);
+        }
         if (ed is SchematicEditor s2 && s2.Sheet.Width > 0)
         {
             // Paper area behind the drawing.

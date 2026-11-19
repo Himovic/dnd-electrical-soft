@@ -27,6 +27,6 @@ Profiles are *addressing templates* — they are not vendor catalogues and do no
 
 ## Linking
 
-Place PLC channel symbols (DI, DO, AI, AO) on schematics and link them to channels: the symbol displays the address and PLC tag, and the I/O list shows the schematic location, field device and terminal.
+Create stations and modules in **Engineering data ▸ PLC configuration**. Place PLC channel symbols (DI, DO, AI, AO) on schematics and choose the channel in the **Channel** field of the symbol properties (PLC tag and description are editable there too): the symbol displays the address and PLC tag, and the I/O list shows the schematic location, field device and terminal.
 
 Validation checks duplicate addresses and tags, address format, missing descriptions and unlinked symbols.

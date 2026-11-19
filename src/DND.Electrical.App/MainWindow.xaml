@@ -83,8 +83,10 @@
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE81C;" Content="New revision" Command="{Binding CreateRevisionCommand}"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE81C;" Content="Version history" Command="{Binding VersionHistoryCommand}" ToolTip="Restore a backup"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE723;" Content="Attach file" Command="{Binding AddAttachmentCommand}"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xEB9F;" Content="Company logo" Command="{Binding SetCompanyLogoCommand}" ToolTip="Logo shown in title blocks and reports"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xE8C8;" Content="Duplicate" Command="{Binding DuplicateProjectCommand}" ToolTip="Copy the saved project with a new number"/>
                     </StackPanel></GroupBox>
-                    <GroupBox Header="Archive" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Archive" Style="{StaticResource RibbonGroup}" Visibility="{Binding AdvancedMode, Converter={StaticResource BoolToVis}}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE7B8;" Content="Export archive" Command="{Binding ExportArchiveCommand}"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8B5;" Content="Import archive" Command="{Binding ImportArchiveCommand}"/>
                     </StackPanel></GroupBox>
@@ -110,7 +112,7 @@
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE9A1;" Content="Dimension" Command="{Binding SetToolCommand}" CommandParameter="dimension"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8BD;" Content="Callout" Command="{Binding SetToolCommand}" CommandParameter="callout"/>
                     </StackPanel></GroupBox>
-                    <GroupBox Header="Modify" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Modify" Style="{StaticResource RibbonGroup}" Visibility="{Binding AdvancedMode, Converter={StaticResource BoolToVis}}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE7C2;" Content="Move" Command="{Binding SetToolCommand}" CommandParameter="move"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8C8;" Content="Copy" Command="{Binding SetToolCommand}" CommandParameter="copy"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE7AD;" Content="Rotate 90°" Command="{Binding RotateCommand}" ToolTip="Rotate selection by 90° (R)"/>
@@ -129,7 +131,7 @@
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE710;" Content="Insert selected" Command="{Binding InsertSymbolCommand}" ToolTip="Insert the symbol selected in the Symbol Browser (R rotate, X mirror)"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE70F;" Content="Symbol editor" Command="{Binding OpenSymbolEditorCommand}"/>
                     </StackPanel></GroupBox>
-                    <GroupBox Header="Import" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Import" Style="{StaticResource RibbonGroup}" Visibility="{Binding AdvancedMode, Converter={StaticResource BoolToVis}}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8B5;" Content="DXF" Command="{Binding ImportDxfCommand}" ToolTip="Import DXF geometry into the active sheet"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8B5;" Content="Catalogue" Command="{Binding ImportCatalogCommand}" ToolTip="Import manufacturer products from CSV or Excel"/>
                     </StackPanel></GroupBox>
@@ -164,12 +166,12 @@
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE9F9;" Content="Reports…" Command="{Binding ExportReportsCommand}" ToolTip="BOM, lists, schedules, calculations in PDF, Excel or CSV"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE7B8;" Content="Handover package" Command="{Binding HandoverPackageCommand}"/>
                     </StackPanel></GroupBox>
-                    <GroupBox Header="Sheet exchange" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Sheet exchange" Style="{StaticResource RibbonGroup}" Visibility="{Binding AdvancedMode, Converter={StaticResource BoolToVis}}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE78C;" Content="DXF" Command="{Binding ExportSheetCommand}" CommandParameter="dxf"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE78C;" Content="SVG" Command="{Binding ExportSheetCommand}" CommandParameter="svg"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xEB9F;" Content="PNG" Command="{Binding ExportSheetCommand}" CommandParameter="png"/>
                     </StackPanel></GroupBox>
-                    <GroupBox Header="Data exchange" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Data exchange" Style="{StaticResource RibbonGroup}" Visibility="{Binding AdvancedMode, Converter={StaticResource BoolToVis}}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE943;" Content="JSON" Command="{Binding ExportDataCommand}" CommandParameter="json"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE943;" Content="XML" Command="{Binding ExportDataCommand}" CommandParameter="xml"/>
                     </StackPanel></GroupBox>
@@ -194,6 +196,7 @@
                     <GroupBox Header="Tools" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE713;" Content="Settings" Command="{Binding OpenSettingsCommand}"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE70F;" Content="Symbol editor" Command="{Binding OpenSymbolEditorCommand}"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xEA86;" Content="Plugins" Command="{Binding ManagePluginsCommand}" ToolTip="Verify and trust plugins (administrators)"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8BD;" Content="Assistant" Command="{Binding OpenAssistantCommand}" ToolTip="Offline engineering assistant – never changes drawings without confirmation"/>
                     </StackPanel></GroupBox>
                 </StackPanel>

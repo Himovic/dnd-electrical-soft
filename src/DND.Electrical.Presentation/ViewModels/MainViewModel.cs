@@ -624,8 +624,30 @@ public sealed partial class MainViewModel : ObservableObject
                     Add("Placement", "Rotation", $"{si.Rotation:0}", null);
                     Add("Placement", "Mirrored", si.Mirrored ? "Yes" : "No", null);
                     Add("Placement", "Symbol", $"{si.SymbolId} v{si.Definition?.Version}", null);
-                    if (si.PlcChannelId is { } ch && Session.Project.FindPlcChannel(ch) is { } channel)
-                        Add("PLC", "Address", channel.Address, null);
+                    if (si.Definition?.Role == SymbolRole.PlcIo)
+                    {
+                        var kind = si.SymbolId switch
+                        {
+                            "IEC.PLC.DI" => PlcSignalKind.DigitalInput, "IEC.PLC.DO" => PlcSignalKind.DigitalOutput,
+                            "IEC.PLC.AI" => PlcSignalKind.AnalogInput, _ => PlcSignalKind.AnalogOutput,
+                        };
+                        var channels = Session.Project.PlcStations.SelectMany(st => st.Channels.Where(c => c.Kind == kind).Select(c => (st, c))).ToList();
+                        var current = si.PlcChannelId is { } chId ? channels.FirstOrDefault(x => x.c.Id == chId) : default;
+                        Add("PLC", "Channel", current.c is null ? "" : $"{current.st.Tag} {current.c.Address}", v =>
+                        {
+                            var target = channels.FirstOrDefault(x => $"{x.st.Tag} {x.c.Address}" == v);
+                            if (target.c is null) { _s.Dialogs.ShowError("PLC channel", "Choose a channel from the list (create stations and modules in Engineering data)."); return; }
+                            var r = DND.Electrical.PLC.PlcService.LinkSymbol(Session.Project, target.c, si);
+                            if (r.IsFailure) _s.Dialogs.ShowError("PLC channel", r.Error!);
+                            Rebind();
+                        }, options: channels.Select(x => $"{x.st.Tag} {x.c.Address}").ToList());
+                        if (current.c is not null)
+                        {
+                            var chn = current.c;
+                            Add("PLC", "PLC tag", chn.Tag, v => { chn.Tag = v; Rebind(); });
+                            Add("PLC", "Signal description", chn.Description, v => { chn.Description = v; Rebind(); });
+                        }
+                    }
                     break;
                 }
             case WireEntity w:

@@ -4,7 +4,7 @@
 |---|---|---|
 | `tests/DND.Electrical.UnitTests` (86) | Geometry, CAD engine and tools (simulated pointer input), serialization, DXF round trip, symbols, connectivity, numbering, tagging, cross-references, schematic editor, calculations (hand-computed references), PLC, panel, cables, terminal diagrams | Any OS |
 | `tests/DND.Electrical.IntegrationTests` (34) | SQLite persistence of all demo projects, derived SQL table, lifecycle (locks, backups, revisions), recovery, archives (incl. malicious archives), central store, JSON/XML, demo validation, handover package, PDF/XLSX/CSV/DXF/SVG/PNG export, help library, tutorials, plugins (end-to-end), catalogue import, assistant, permissions | Any OS |
-| `tests/DND.Electrical.UIAutomationTests` (10) | UI workflows through the real view models: startup, project creation, symbol insertion, wiring, property editing with undo, numbering, validation navigation, save/close/reopen, unsaved-change prompt, help navigation and administration, tutorials, calculations, engineering data, symbol editor, command palette | Any OS |
+| `tests/DND.Electrical.UIAutomationTests` (11) | UI workflows through the real view models: startup, project creation, symbol insertion, wiring, property editing with undo, numbering, validation navigation, save/close/reopen, unsaved-change prompt, help navigation and administration, tutorials, calculations, engineering data, symbol editor, PLC channel linking, command palette | Any OS |
 
 ```bash
 dotnet test DND-Electrical-Engineering-Suite.sln

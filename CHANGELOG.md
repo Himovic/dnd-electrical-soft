@@ -19,4 +19,4 @@ All notable changes to **D&D Electrical Engineering Suite** (© 2026 D&D | Data&
 - Plugin host with integrity and trust checks; sample plugin.
 - Five demonstration projects; ten project templates.
 - MVVM view models, WPF desktop application and cross-platform CLI.
-- 130 automated tests (unit, integration, UI workflow).
+- 131 automated tests (unit, integration, UI workflow).

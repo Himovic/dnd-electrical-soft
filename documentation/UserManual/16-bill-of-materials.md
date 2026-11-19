@@ -11,8 +11,8 @@ The BOM is generated from devices, terminals, cabinet accessories (enclosures, D
 
 ## Catalogue import
 
-Tools ▸ Import catalogue reads CSV or Excel files. Expected columns: Manufacturer, PartNumber, Description, Category, UnitPrice, Currency, Supplier, Width, Height, Depth. Imported products are marked as verified catalogue data; the bundled demo products are marked fictional.
+**Insert ▸ Catalogue** (advanced mode) reads CSV or Excel files. Expected columns: Manufacturer, PartNumber, Description, Category, UnitPrice, Currency, Supplier, Width, Height, Depth. Imported products are marked as verified catalogue data; the bundled demo products are marked fictional.
 
 ## Procurement
 
-Set the status per part (not ordered, requested, quoted, ordered, delivered, installed, cancelled), supplier and purchase order.
+In **Engineering data ▸ Procurement status**, set the status per part (not ordered, requested, quoted, ordered, delivered, installed, cancelled), supplier and purchase order.

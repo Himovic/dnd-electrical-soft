@@ -167,6 +167,9 @@ public static class SchematicEntityTypes
         CAD.Serialization.CadEntityTypeRegistry.Register<JunctionEntity>("Junction");
     }
 
+    // Intentional: ensures drawings containing schematic entities deserialize as soon as this module loads.
+#pragma warning disable CA2255
     [System.Runtime.CompilerServices.ModuleInitializer]
     internal static void Init() => Register();
+#pragma warning restore CA2255
 }

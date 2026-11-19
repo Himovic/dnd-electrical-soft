@@ -9,10 +9,10 @@ keywords: cabinet, panel, enclosure, mounting plate, din rail, duct, layout, col
 
 The cabinet layout is a 2D front view of the mounting plate.
 
-1. **Engineering ▸ Cabinets ▸ New cabinet**: enclosure size, mounting plate size, IP rating, minimum clearance.
+1. **Engineering ▸ Engineering data ▸ Cabinet layout ▸ New cabinet**: enclosure width and height (the mounting plate is derived).
 2. Add **DIN rails** and **cable ducts**.
-3. Place devices from the equipment list onto rails. Devices are placed at the first free position and centred on the rail; their width and height come from the catalogue product.
-4. Door-mounted devices (push buttons, lamps) are placed on the door face.
+3. **Place device** by tag: the device is placed at the first free position on a rail and centred on it; width and height come from its catalogue product.
+4. Door-mounted items are stored with the *door* face and listed in the cabinet report; a door layout drawing is planned.
 
 ## Checks
 

@@ -216,6 +216,27 @@ public class WorkflowTests
     }
 
     [Fact]
+    public async Task Plc_channel_can_be_linked_from_properties()
+    {
+        using var h = new UiHarness();
+        h.Dialogs.ConfirmAnswer = false;
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-AUT-002");
+        var p = h.Main.Session!.Project;
+        var sheet = p.Sheets.First(s => s.Title == "PLC digital inputs");
+        h.Main.OpenSheet(sheet);
+        var ed = (SchematicEditor)h.Main.ActiveDocument!.Editor;
+        var di = ed.InsertSymbol(h.Services.Symbols.Find("IEC.PLC.DI")!, new Point2(300, 140), deviceTag: "-A1");
+        ed.Selection.Set(new[] { di.Id });
+        h.Main.UpdateProperties();
+        var row = h.Main.Properties.First(r => r.Name == "Channel");
+        Assert.Contains("-A1 %I0.6", row.Options!);
+        row.Value = "-A1 %I0.6";
+        row.Commit();
+        Assert.Equal("%I0.6", p.FindPlcChannel(di.PlcChannelId!.Value)!.Address);
+        Assert.Equal("%I0.6", di.Display["ADDRESS"]);
+    }
+
+    [Fact]
     public void Symbol_editor_creates_custom_symbol()
     {
         using var h = new UiHarness();
