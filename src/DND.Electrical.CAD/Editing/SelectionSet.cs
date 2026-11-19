@@ -15,15 +15,16 @@ public sealed class SelectionSet
 
     public void Set(IEnumerable<Guid> ids)
     {
+        var incoming = ids.ToList(); // materialise first: the input may be a query over this set
         _ids.Clear();
-        foreach (var id in ids) if (!_ids.Contains(id)) _ids.Add(id);
+        foreach (var id in incoming) if (!_ids.Contains(id)) _ids.Add(id);
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public void Add(IEnumerable<Guid> ids)
     {
         var changed = false;
-        foreach (var id in ids)
+        foreach (var id in ids.ToList())
             if (!_ids.Contains(id)) { _ids.Add(id); changed = true; }
         if (changed) Changed?.Invoke(this, EventArgs.Empty);
     }

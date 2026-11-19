@@ -24,8 +24,11 @@ public interface ICadEditorExtension
     /// <summary>Called after entities were transformed (move/rotate/mirror) inside an undo group.</summary>
     void OnTransformed(CadEditor editor, IReadOnlyList<CadEntity> entities, Matrix2 transform) { }
 
-    /// <summary>Called after pasted/duplicated entities were added, inside an undo group.</summary>
-    void OnPasted(CadEditor editor, IReadOnlyList<CadEntity> entities) { }
+    /// <summary>
+    /// Called after pasted/duplicated entities were added, inside an undo group.
+    /// <paramref name="idMap"/> maps the original entity ids to the ids of the pasted copies.
+    /// </summary>
+    void OnPasted(CadEditor editor, IReadOnlyList<CadEntity> entities, IReadOnlyDictionary<Guid, Guid> idMap) { }
 
     /// <summary>Extra snap filtering (e.g. wire tool snapping to pins only).</summary>
     bool AllowSnap(CadEditor editor, CadEntity entity, SnapPoint point) => true;
@@ -325,14 +328,22 @@ public class CadEditor
     {
         json ??= _clipboard;
         if (json is null) return Array.Empty<CadEntity>();
-        var items = CadJson.DeserializeEntities(json).Select(e => e.Clone(keepId: false)).ToList();
+        var originals = CadJson.DeserializeEntities(json);
+        var idMap = new Dictionary<Guid, Guid>();
+        var items = new List<CadEntity>(originals.Count);
+        foreach (var o in originals)
+        {
+            var copy = o.Clone(keepId: false);
+            idMap[o.Id] = copy.Id;
+            items.Add(copy);
+        }
         if (items.Count == 0) return items;
         var d = offset ?? new Point2(Snap.GridSpacing * 2, -Snap.GridSpacing * 2);
         foreach (var e in items) e.Transform(Matrix2.Translation(d));
         using (Undo.BeginGroup("Paste"))
         {
             Undo.Execute(new AddEntitiesAction(Drawing, items, "Paste"));
-            foreach (var x in Extensions) x.OnPasted(this, items);
+            foreach (var x in Extensions) x.OnPasted(this, items, idMap);
         }
         Selection.Set(items.Select(e => e.Id));
         return items;
