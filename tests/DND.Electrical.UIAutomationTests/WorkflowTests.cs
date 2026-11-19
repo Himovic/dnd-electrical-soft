@@ -211,7 +211,7 @@ public class WorkflowTests
         var data = new EngineeringDataViewModel(h.Services, h.Main.Session.Project, () => { });
         Assert.NotNull(data.Table);
         Assert.True(data.Table!.Rows.Count > 5);
-        data.SelectedList = data.Lists.First(l => l.id == "cables");
+        data.SelectedList = data.Lists.First(l => l.Id == "cables");
         Assert.Equal(6, data.Table!.Rows.Count);
     }
 

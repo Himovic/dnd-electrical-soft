@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>DND.Electrical.App</RootNamespace>
+    <AssemblyName>DND.ElectricalSuite</AssemblyName>
+    <ApplicationIcon>../../resources/Icons/dnd-app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SatelliteResourceLanguages>en;fr</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DND.Electrical.Presentation/DND.Electrical.Presentation.csproj" />
+    <ProjectReference Include="../DND.Electrical.Infrastructure/DND.Electrical.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.Views.WPF" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="../../resources/Icons/dnd-logo-256.png" Link="Assets/dnd-logo-256.png" />
+    <Resource Include="../../resources/Icons/dnd-app.ico" Link="Assets/dnd-app.ico" />
+    <Content Include="../../documentation/UserManual/**/*" LinkBase="Documentation" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

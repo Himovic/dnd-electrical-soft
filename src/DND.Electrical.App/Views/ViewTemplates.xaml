@@ -1,0 +1,416 @@
+<ResourceDictionary x:Class="DND.Electrical.App.Views.ViewTemplates"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:DND.Electrical.Presentation.ViewModels;assembly=DND.Electrical.Presentation"
+                    xmlns:ctl="clr-namespace:DND.Electrical.App.Controls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/DND.ElectricalSuite;component/Themes/Styles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Common OK / Cancel bar for dialog view models -->
+    <DataTemplate x:Key="DialogButtons">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <TextBlock Text="{Binding Error}" Foreground="{DynamicResource Brush.Error}" MaxWidth="420" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <Button Content="OK" Command="{Binding OkCommand}" IsDefault="True" Style="{StaticResource AccentButton}" MinWidth="90"/>
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource FlatButton}" MinWidth="90"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <Style x:Key="FormLabel" TargetType="TextBlock" BasedOn="{StaticResource Subtle}">
+        <Setter Property="Margin" Value="0,8,0,2"/>
+    </Style>
+
+    <DataTemplate DataType="{x:Type vm:NewProjectViewModel}">
+        <StackPanel Width="560">
+            <TextBlock Text="Create a new project" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="Template" Style="{StaticResource FormLabel}"/>
+            <ListBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" Height="170">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="2">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Description}" Style="{StaticResource Subtle}" TextWrapping="Wrap" MaxWidth="500"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Project number *" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Project name *" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Customer" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Customer}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Company" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Company}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Engineer" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Engineer}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Site" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Site}"/></StackPanel>
+            </UniformGrid>
+            <TextBlock Text="Description" Style="{StaticResource FormLabel}"/>
+            <TextBox Text="{Binding Description}" AcceptsReturn="True" Height="54" TextWrapping="Wrap"/>
+            <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ProjectPropertiesViewModel}">
+        <StackPanel Width="620">
+            <TextBlock Text="Project properties (used in title blocks and reports)" Style="{StaticResource SectionTitle}"/>
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Number" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.Number}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Name" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.Name}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Customer" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.CustomerName}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Customer address" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.CustomerAddress}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Company" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.CompanyName}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Company address" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.CompanyAddress}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Engineer" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.Engineer}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Checked by / Approved by" Style="{StaticResource FormLabel}"/>
+                    <DockPanel><TextBox Text="{Binding Info.CheckedBy}" Width="140"/><TextBox Text="{Binding Info.ApprovedBy}" Margin="6,0,0,0"/></DockPanel></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Reference" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.Reference}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Site" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Info.Site}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Status" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding Info.Status}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Industry" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Industries}" SelectedItem="{Binding Info.Industry}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Nominal voltage (V)" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Settings.NominalVoltage}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Earthing system" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Settings.EarthingSystem}"/></StackPanel>
+            </UniformGrid>
+            <TextBlock Text="Description" Style="{StaticResource FormLabel}"/>
+            <TextBox Text="{Binding Info.Description}" AcceptsReturn="True" Height="54" TextWrapping="Wrap"/>
+            <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+        <StackPanel Width="560">
+            <TextBlock Text="Application" Style="{StaticResource SectionTitle}"/>
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Theme" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Accent colour (#RRGGBB)" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Accent}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Language (reports)" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="User name" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding UserName}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Autosave interval (min)" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Autosave}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Backups to keep" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Backups}"/></StackPanel>
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Grid spacing (mm)" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Grid}"/></StackPanel>
+                <CheckBox Content="Advanced mode (show all ribbon groups)" IsChecked="{Binding Advanced}" Margin="6,28,0,0" Foreground="{DynamicResource Brush.Text}"/>
+            </UniformGrid>
+            <StackPanel Visibility="{Binding HasProject, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="Current project" Style="{StaticResource SectionTitle}" Margin="0,16,0,4"/>
+                <UniformGrid Columns="2">
+                    <StackPanel Margin="0,0,6,0"><TextBlock Text="Wire number format" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding WireFormat}" ToolTip="Tokens: {GSEQ}, {SHEET}, {COL}, {SEQ}; padding e.g. {GSEQ:000}"/></StackPanel>
+                    <StackPanel Margin="6,0,0,0"><TextBlock Text="Device tag format" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding TagFormat}" ToolTip="Tokens: {PREFIX}, {N}, {SHEET}, {COL}"/></StackPanel>
+                    <StackPanel Margin="0,0,6,0"><TextBlock Text="Nominal voltage (V)" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Voltage}"/></StackPanel>
+                    <StackPanel Margin="6,0,0,0"><TextBlock Text="Standard profile" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding Profile}"/></StackPanel>
+                </UniformGrid>
+                <CheckBox Content="Number wires per potential (otherwise per wire)" IsChecked="{Binding PerPotential}" Margin="0,10,0,0" Foreground="{DynamicResource Brush.Text}"/>
+            </StackPanel>
+            <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ReportExportViewModel}">
+        <StackPanel Width="520">
+            <TextBlock Text="Select the documents to generate" Style="{StaticResource SectionTitle}"/>
+            <ItemsControl ItemsSource="{Binding Reports}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate><DataTemplate><CheckBox Content="{Binding Title}" IsChecked="{Binding Selected}" Margin="2" Foreground="{DynamicResource Brush.Text}"/></DataTemplate></ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <Button Content="Select all" Command="{Binding SelectAllCommand}" CommandParameter="{StaticResource TrueValue}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Clear" Command="{Binding SelectAllCommand}" CommandParameter="{StaticResource FalseValue}" Style="{StaticResource FlatButton}"/>
+            </StackPanel>
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,6,0"><TextBlock Text="Format" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding Format}"/></StackPanel>
+                <StackPanel Margin="6,0,0,0"><TextBlock Text="Language" Style="{StaticResource FormLabel}"/><ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}"/></StackPanel>
+            </UniformGrid>
+            <CheckBox Content="Include cover page" IsChecked="{Binding IncludeCover}" Margin="0,10,0,0" Foreground="{DynamicResource Brush.Text}"/>
+            <TextBlock Text="Footer text (optional)" Style="{StaticResource FormLabel}"/>
+            <TextBox Text="{Binding FooterText}"/>
+            <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:AboutViewModel}">
+        <StackPanel Width="500">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="pack://application:,,,/Assets/dnd-logo-256.png" Width="96" Margin="0,0,18,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Product}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" MaxWidth="360"/>
+                    <TextBlock Text="{Binding Version, StringFormat=Version {0}}" Style="{StaticResource Subtle}"/>
+                </StackPanel>
+            </StackPanel>
+            <Grid Margin="0,18,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                <TextBlock Text="Product:" Style="{StaticResource Subtle}"/><TextBlock Grid.Column="1" Text="{Binding Product}"/>
+                <TextBlock Grid.Row="1" Text="Author:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Author}"/>
+                <TextBlock Grid.Row="2" Text="Developer:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Developer}"/>
+                <TextBlock Grid.Row="3" Text="Copyright:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Copyright}" TextWrapping="Wrap"/>
+                <TextBlock Grid.Row="4" Text="Runtime:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Runtime}" TextWrapping="Wrap"/>
+            </Grid>
+            <TextBlock Text="{Binding PoweredBy}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}" Margin="0,16,0,6"/>
+            <TextBlock Text="{Binding Notice}" Style="{StaticResource Subtle}" TextWrapping="Wrap"/>
+            <Button Content="Close" Command="{Binding OkCommand}" IsDefault="True" HorizontalAlignment="Right" Style="{StaticResource AccentButton}" Margin="0,14,0,0" MinWidth="90"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:TextViewerViewModel}">
+        <TextBox Text="{Binding Text, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="13" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="8"/>
+    </DataTemplate>
+
+    <!-- ============================== Help center ============================== -->
+    <DataTemplate DataType="{x:Type vm:HelpCenterViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="300"/><ColumnDefinition Width="5"/><ColumnDefinition/></Grid.ColumnDefinitions>
+            <DockPanel Background="{DynamicResource Brush.Panel}">
+                <TextBox DockPanel.Dock="Top" Margin="8" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search the documentation"/>
+                <TabControl>
+                    <TabItem Header="Contents">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{Binding SearchResults}" Visibility="{Binding Query, Converter={StaticResource BoolToVis}}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource FlatButton}" HorizontalContentAlignment="Left"
+                                                    Command="{Binding DataContext.OpenArticleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Article}">
+                                                <StackPanel><TextBlock Text="{Binding Article.Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Snippet}" Style="{StaticResource Subtle}" TextWrapping="Wrap" MaxWidth="250"/></StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ItemsControl ItemsSource="{Binding Categories}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Expander Header="{Binding Name}" IsExpanded="{Binding IsExpanded}" Foreground="{DynamicResource Brush.Text}" Margin="4,2">
+                                                <ItemsControl ItemsSource="{Binding Articles}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Button Margin="12,1,2,1" Padding="4,2" Style="{StaticResource FlatButton}" BorderThickness="0" HorizontalAlignment="Left" Content="{Binding Title}"
+                                                                    Command="{Binding DataContext.OpenArticleCommand, RelativeSource={RelativeSource AncestorType=TabControl}}" CommandParameter="{Binding}"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Expander>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Tutorials">
+                        <ItemsControl ItemsSource="{Binding Tutorials}" Margin="6">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource FlatButton}" HorizontalContentAlignment="Left"
+                                            Command="{Binding DataContext.StartTutorialCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                                        <StackPanel><TextBlock Text="{Binding Title}" FontWeight="SemiBold"/><TextBlock Text="{Binding Steps.Count, StringFormat={}{0} steps}" Style="{StaticResource Subtle}"/></StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </TabItem>
+                    <TabItem Header="Shortcuts">
+                        <DataGrid ItemsSource="{Binding Shortcuts}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Keys" Binding="{Binding Keys}"/>
+                                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource Brush.Border}"/>
+            <DockPanel Grid.Column="2">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Documentation administration:" Style="{StaticResource Subtle}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Button Content="Edit article" Command="{Binding BeginEditCommand}" CommandParameter="{StaticResource FalseValue}" Style="{StaticResource FlatButton}"/>
+                    <Button Content="New article" Command="{Binding BeginEditCommand}" CommandParameter="{StaticResource TrueValue}" Style="{StaticResource FlatButton}"/>
+                    <Button Content="Revert custom version" Command="{Binding DeleteCustomCommand}" Style="{StaticResource FlatButton}"/>
+                    <Button Content="Publish documentation version" Command="{Binding PublishCommand}" Style="{StaticResource FlatButton}"/>
+                </StackPanel>
+                <Grid>
+                    <FlowDocumentScrollViewer Document="{Binding Blocks, Converter={StaticResource Markdown}}" Visibility="{Binding EditMode, Converter={StaticResource InvBoolToVis}}" Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}"/>
+                    <DockPanel Visibility="{Binding EditMode, Converter={StaticResource BoolToVis}}" Margin="8">
+                        <UniformGrid DockPanel.Dock="Top" Columns="4">
+                            <StackPanel Margin="2"><TextBlock Text="Id (file name)" Style="{StaticResource Subtle}"/><TextBox Text="{Binding EditId}"/></StackPanel>
+                            <StackPanel Margin="2"><TextBlock Text="Title" Style="{StaticResource Subtle}"/><TextBox Text="{Binding EditTitle}"/></StackPanel>
+                            <StackPanel Margin="2"><TextBlock Text="Category" Style="{StaticResource Subtle}"/><TextBox Text="{Binding EditCategory}"/></StackPanel>
+                            <StackPanel Margin="2"><TextBlock Text="Keywords" Style="{StaticResource Subtle}"/><TextBox Text="{Binding EditKeywords}"/></StackPanel>
+                        </UniformGrid>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Insert image / PDF / video" Command="{Binding InsertAssetCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Save" Command="{Binding SaveEditCommand}" Style="{StaticResource AccentButton}"/>
+                            <Button Content="Cancel" Command="{Binding CancelEditCommand}" Style="{StaticResource FlatButton}"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding EditBody, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" FontFamily="Consolas" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="2,6"/>
+                    </DockPanel>
+                </Grid>
+            </DockPanel>
+        </Grid>
+    </DataTemplate>
+
+    <!-- ============================== Calculations ============================== -->
+    <DataTemplate DataType="{x:Type vm:CalculationsViewModel}">
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="230"/><ColumnDefinition Width="300"/><ColumnDefinition/></Grid.ColumnDefinitions>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Calculation" Style="{StaticResource SectionTitle}"/>
+                <Expander DockPanel.Dock="Bottom" Header="Stored in project" Foreground="{DynamicResource Brush.Text}">
+                    <ListBox ItemsSource="{Binding Stored}" DisplayMemberPath="Title" Height="200" x:Name="StoredList"
+                             SelectionChanged="StoredCalculation_SelectionChanged" Tag="{Binding}"/>
+                </Expander>
+                <ListBox ItemsSource="{Binding Calculators}" SelectedItem="{Binding Selected}">
+                    <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="2"><TextBlock Text="{Binding Name}" FontWeight="SemiBold"/><TextBlock Text="{Binding Description}" Style="{StaticResource Subtle}" TextWrapping="Wrap" MaxWidth="200"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+            <DockPanel Grid.Column="1" Margin="10,0">
+                <TextBlock DockPanel.Dock="Top" Text="Inputs" Style="{StaticResource SectionTitle}"/>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <TextBlock Text="{Binding Error}" Foreground="{DynamicResource Brush.Error}" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Calculate" Command="{Binding CalculateCommand}" Style="{StaticResource AccentButton}"/>
+                        <Button Content="Store in project" Command="{Binding StoreCommand}" Style="{StaticResource FlatButton}"/>
+                    </StackPanel>
+                    <TextBlock Text="Results are preliminary engineering aids and must be verified by a qualified engineer." Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                </StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Selected.Fields}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding Options}" Text="{Binding Value}" IsEditable="True" Visibility="{Binding HasOptions, Converter={StaticResource BoolToVis}}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding HasOptions, Converter={StaticResource InvBoolToVis}}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Unit}" Style="{StaticResource Subtle}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+            <DockPanel Grid.Column="2">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                    <TextBlock Text="Result: " Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="{Binding Status}" Style="{StaticResource SectionTitle}" Foreground="{DynamicResource Brush.Accent}"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                <TextBox Text="{Binding Report, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="12.5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+            </DockPanel>
+        </Grid>
+    </DataTemplate>
+
+    <!-- ============================== Engineering data ============================== -->
+    <DataTemplate DataType="{x:Type vm:EngineeringDataViewModel}">
+        <TabControl Margin="6">
+            <TabItem Header="Lists and schedules">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4">
+                        <ComboBox ItemsSource="{Binding Lists}" SelectedItem="{Binding SelectedList}" DisplayMemberPath="Title" Width="280"/>
+                        <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Add cable…" Command="{Binding AddCableCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Add motor…" Command="{Binding AddMotorCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Procurement status…" Command="{Binding SetProcurementStatusCommand}" Style="{StaticResource FlatButton}"/>
+                    </StackPanel>
+                    <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Table.Notes}" Margin="4"/>
+                    <DataGrid ItemsSource="{Binding Table, Converter={StaticResource ReportTable}}" AutoGenerateColumns="True" CanUserSortColumns="True"/>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="PLC configuration">
+                <DockPanel Margin="6">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <TextBlock Text="Station:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox ItemsSource="{Binding Stations}" SelectedItem="{Binding SelectedStation}" DisplayMemberPath="Tag" Width="120"/>
+                        <Button Content="New station…" Command="{Binding AddPlcStationCommand}" Style="{StaticResource FlatButton}"/>
+                        <TextBlock Text="Add module:" VerticalAlignment="Center" Margin="16,0,6,0"/>
+                        <ComboBox x:Name="ModuleType" ItemsSource="{Binding ModuleTypes}" DisplayMemberPath="Name" Width="260"/>
+                        <Button Content="Add" Command="{Binding AddPlcModuleCommand}" CommandParameter="{Binding SelectedItem, ElementName=ModuleType}" Style="{StaticResource FlatButton}"/>
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Text="Addressing profiles are generic templates (not vendor catalogues) and do not integrate with vendor programming software. Verify addresses against your hardware configuration."/>
+                    <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Profiles}" Margin="0,8">
+                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Style="{StaticResource Subtle}"><Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold"/><Run Text=" – "/><Run Text="{Binding Notes, Mode=OneWay}"/></TextBlock></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Cabinet layout">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4">
+                        <ComboBox ItemsSource="{Binding Cabinets}" SelectedItem="{Binding SelectedCabinet}" DisplayMemberPath="Tag" Width="120"/>
+                        <Button Content="New cabinet…" Command="{Binding AddCabinetCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Add DIN rail…" Command="{Binding AddRailCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Add cable duct…" Command="{Binding AddDuctCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Place device…" Command="{Binding PlaceDeviceCommand}" Style="{StaticResource FlatButton}"/>
+                        <TextBlock Text="{Binding CabinetSummary}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource Subtle}"/>
+                    </StackPanel>
+                    <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding CabinetIssues}" Margin="6"/>
+                    <ctl:CadCanvas Drawing="{Binding CabinetDrawing}"/>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DataTemplate>
+
+    <!-- ============================== Assistant ============================== -->
+    <DataTemplate DataType="{x:Type vm:AssistantViewModel}">
+        <DockPanel Margin="10">
+            <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                <Button DockPanel.Dock="Right" Content="Ask" Command="{Binding AskCommand}" IsDefault="True" Style="{StaticResource AccentButton}"/>
+                <TextBox Text="{Binding Question, UpdateSourceTrigger=PropertyChanged}"/>
+            </DockPanel>
+            <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Suggestions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Command="{Binding DataContext.ApplyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                            <TextBlock><Run Text="Apply (with confirmation): "/><Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Conversation}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource Brush.Panel}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,4">
+                                <StackPanel><TextBlock Text="{Binding Role}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}"/><TextBlock Text="{Binding Text}" TextWrapping="Wrap"/></StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </DockPanel>
+    </DataTemplate>
+
+    <!-- ============================== Symbol editor ============================== -->
+    <DataTemplate DataType="{x:Type vm:SymbolEditorViewModel}">
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Margin="6" Style="{StaticResource Subtle}" TextWrapping="Wrap"
+                           Text="Draw the graphics with the command line (L line, PL polyline, C circle, A arc, REC rectangle, T text). The origin (0,0) is the insertion point; use a 2.5 mm grid. Pins are edited on the right."/>
+                <TextBox DockPanel.Dock="Bottom" x:Name="SymbolCommand" Margin="4" KeyDown="SymbolCommand_KeyDown" Tag="{Binding Editor}" ToolTip="Command line (e.g. L, then 0,10 and 0,-10)"/>
+                <ctl:CadCanvas Editor="{Binding Editor}"/>
+            </DockPanel>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Brush.Panel}">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Symbol" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Text="Id" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding SymbolId}"/>
+                    <TextBlock Text="Name" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Name}"/>
+                    <TextBlock Text="Description" Style="{StaticResource FormLabel}"/><TextBox Text="{Binding Description}"/>
+                    <TextBlock Text="Category / role / contact" Style="{StaticResource FormLabel}"/>
+                    <UniformGrid Columns="3"><ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Category}"/><ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding Role}"/><ComboBox ItemsSource="{Binding ContactTypes}" SelectedItem="{Binding ContactType}"/></UniformGrid>
+                    <TextBlock Text="Tag prefix / keywords / library" Style="{StaticResource FormLabel}"/>
+                    <UniformGrid Columns="3"><TextBox Text="{Binding TagPrefix}"/><TextBox Text="{Binding Keywords}"/><TextBox Text="{Binding LibraryId}"/></UniformGrid>
+                    <DockPanel Margin="0,12,0,4">
+                        <Button DockPanel.Dock="Right" Content="Add pin" Command="{Binding AddPinCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button DockPanel.Dock="Right" Content="Show pins" Command="{Binding RefreshPinMarkersCommand}" Style="{StaticResource FlatButton}"/>
+                        <TextBlock Text="Pins" Style="{StaticResource SectionTitle}"/>
+                    </DockPanel>
+                    <DataGrid ItemsSource="{Binding Pins}" IsReadOnly="False" AutoGenerateColumns="False" CanUserAddRows="False" Height="180">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Id" Binding="{Binding Id}"/>
+                            <DataGridTextColumn Header="Label" Binding="{Binding Label}"/>
+                            <DataGridTextColumn Header="X" Binding="{Binding X}"/>
+                            <DataGridTextColumn Header="Y" Binding="{Binding Y}"/>
+                            <DataGridTextColumn Header="Direction" Binding="{Binding Direction}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Save to custom library" Command="{Binding SaveSymbolCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,6,0,0" Foreground="{DynamicResource Brush.Accent}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

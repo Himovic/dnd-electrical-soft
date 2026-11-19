@@ -281,6 +281,8 @@ public sealed partial class CalculationsViewModel : ObservableObject
 
 // ====================================================================== Engineering data (lists, PLC, cables, cabinets)
 
+public sealed record ReportListItem(string Id, string Title);
+
 public sealed partial class EngineeringDataViewModel : ObservableObject
 {
     private readonly AppServices _s;
@@ -290,35 +292,35 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
     public EngineeringDataViewModel(AppServices services, ElectricalProject project, Action changed)
     {
         _s = services; _p = project; _changed = changed;
-        Lists = ProjectReports.Catalogue(services.Settings.Language).Where(c => c.id is not ("validation")).ToList();
-        _selectedList = Lists.First(l => l.id == "bom");
+        Lists = ProjectReports.Catalogue(services.Settings.Language).Where(c => c.id is not ("validation")).Select(c => new ReportListItem(c.id, c.title)).ToList();
+        _selectedList = Lists.First(l => l.Id == "bom");
         _selectedCabinet = project.Cabinets.FirstOrDefault();
         Refresh();
     }
 
     public string Title => $"Engineering data – {_p.Info.Number}";
-    public IReadOnlyList<(string id, string title)> Lists { get; }
+    public IReadOnlyList<ReportListItem> Lists { get; }
     public IReadOnlyList<Cabinet> Cabinets => _p.Cabinets.ToList();
     public IReadOnlyList<PlcStation> Stations => _p.PlcStations.ToList();
     public IReadOnlyList<PlcModuleType> ModuleTypes => PlcModuleType.Generic;
     public IReadOnlyList<PlcProfile> Profiles => PlcProfile.BuiltIn;
     public IReadOnlyList<string> CabinetIssues => SelectedCabinet is null ? Array.Empty<string>() : CabinetLayoutService.Check(SelectedCabinet).Select(i => $"{i.Severity}: {i.Message}").ToList();
 
-    [ObservableProperty] private (string id, string title) _selectedList;
+    [ObservableProperty] private ReportListItem _selectedList;
     [ObservableProperty] private ReportTable? _table;
     [ObservableProperty] private Cabinet? _selectedCabinet;
     [ObservableProperty] private CadDrawing? _cabinetDrawing;
     [ObservableProperty] private PlcStation? _selectedStation;
     [ObservableProperty] private string _cabinetSummary = string.Empty;
 
-    partial void OnSelectedListChanged((string id, string title) value) => Refresh();
+    partial void OnSelectedListChanged(ReportListItem value) => Refresh();
     partial void OnSelectedCabinetChanged(Cabinet? value) => RefreshCabinet();
 
     [RelayCommand]
     public void Refresh()
     {
         var g = _s.Schematic.Binder.BindWithConnectivity(_p);
-        Table = new ProjectReports(_p, g, new ReportOptions { Language = _s.Settings.Language }).Build(SelectedList.id);
+        Table = new ProjectReports(_p, g, new ReportOptions { Language = _s.Settings.Language }).Build(SelectedList.Id);
         RefreshCabinet();
         OnPropertyChanged(nameof(Stations));
     }
@@ -355,7 +357,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
         var from = Ask("From", "+CAB1") ?? ""; var to = Ask("To", "") ?? "";
         var c = CableService.CreateCable(_p, type, Math.Max(1, cores), cs, len, from, to);
         _p.Audit("Cable", $"{c.Tag} created");
-        SelectedList = Lists.First(l => l.id == "cables");
+        SelectedList = Lists.First(l => l.Id == "cables");
         Done();
     }
 
@@ -366,7 +368,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
         var profile = Ask($"Addressing profile ({string.Join(", ", PlcProfile.BuiltIn.Select(p => p.Id))})", "generic-iec") ?? "generic-iec";
         SelectedStation = PlcService.CreateStation(_p, tag.Trim(), "PLC", PlcProfile.Get(profile).Id);
         PlcService.AddModule(SelectedStation, SelectedStation.Racks[0], "GEN-CPU");
-        SelectedList = Lists.First(l => l.id == "plcio");
+        SelectedList = Lists.First(l => l.Id == "plcio");
         Done();
     }
 
@@ -376,7 +378,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
         var st = SelectedStation ?? _p.PlcStations.FirstOrDefault();
         if (st is null || type is null) { _s.Dialogs.ShowInfo(Title, "Create a PLC station and choose a module type."); return; }
         PlcService.AddModule(st, st.Racks[0], type.Id);
-        SelectedList = Lists.First(l => l.id == "plcio");
+        SelectedList = Lists.First(l => l.Id == "plcio");
         Done();
     }
 
@@ -443,7 +445,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
         var kw = Num(Ask("Rated power (kW)", "4"), 4);
         var r = PowerCalculator.CurrentFromPower(SupplySystem.ThreePhase, kw, _p.Settings.NominalVoltage, 0.85, 0.88);
         _p.Motors.Add(new Motor { DeviceId = dev?.Id, Tag = tag.Trim(), Description = dev?.Function ?? "", PowerKw = kw, VoltageV = _p.Settings.NominalVoltage, PowerFactor = 0.85, Efficiency = 0.88, RatedCurrentA = Math.Round(r.Output("Current I"), 2) });
-        SelectedList = Lists.First(l => l.id == "motors");
+        SelectedList = Lists.First(l => l.Id == "motors");
         Done();
     }
 }
