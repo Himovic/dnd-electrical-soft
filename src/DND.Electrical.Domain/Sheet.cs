@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using DND.Electrical.CAD.Model;
 
 namespace DND.Electrical.Domain;
@@ -43,11 +44,13 @@ public sealed class Sheet
 
     public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
 
+    [JsonIgnore]
     public SheetFormat Format
     {
         get => new(FormatName, Width, Height);
         set { FormatName = value.Name; Width = value.Width; Height = value.Height; }
     }
 
+    [JsonIgnore]
     public string DisplayName => $"{Number:00} – {Title}";
 }

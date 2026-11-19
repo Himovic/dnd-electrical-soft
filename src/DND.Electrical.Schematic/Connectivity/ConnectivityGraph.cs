@@ -27,6 +27,13 @@ public sealed record PinNode(Sheet Sheet, SymbolInstanceEntity Instance, SymbolP
     {
         get
         {
+            switch (Instance.Definition?.Role)
+            {
+                case SymbolRole.PotentialSource:
+                    return $"[{Instance.GetValue(SymbolAttributes.Potential) ?? Instance.Definition.DefaultPotential}]";
+                case SymbolRole.Interruption:
+                    return $">{Instance.GetValue(SymbolAttributes.Name)}";
+            }
             var tag = Device?.Tag ?? "?";
             if (Instance.Definition?.Role == SymbolRole.Terminal)
                 return $"{tag}:{Instance.GetValue(SymbolAttributes.TerminalNumber) ?? "?"}";

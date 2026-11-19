@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace DND.Electrical.Domain;
 
 /// <summary>
@@ -24,6 +26,7 @@ public sealed class Device
 
     public string Notes { get; set; } = string.Empty;
 
+    [JsonIgnore]
     public string DisplayName => string.IsNullOrWhiteSpace(Function) ? Tag : $"{Tag} {Function}";
 
     public string? GetProperty(string key) => Properties.TryGetValue(key, out var v) ? v : null;
@@ -77,6 +80,7 @@ public sealed class Cable
         if (Cores.Count > CoreCount) Cores.RemoveRange(CoreCount, Cores.Count - CoreCount);
     }
 
+    [JsonIgnore]
     public string Designation => $"{CableType} {CoreCount}G{CrossSectionMm2:0.##}".Trim();
 }
 
@@ -90,6 +94,7 @@ public sealed class CableCore
     public Guid? WireId { get; set; }
 
     public string Notes { get; set; } = string.Empty;
+    [JsonIgnore]
     public bool IsSpare => WireId is null;
 }
 
@@ -128,7 +133,9 @@ public sealed class PlcStation
     public string IpAddress { get; set; } = string.Empty;
     public List<PlcRack> Racks { get; set; } = new();
 
+    [JsonIgnore]
     public IEnumerable<PlcModule> Modules => Racks.SelectMany(r => r.Modules);
+    [JsonIgnore]
     public IEnumerable<PlcChannel> Channels => Modules.SelectMany(m => m.Channels);
 }
 
@@ -168,6 +175,7 @@ public sealed class PlcChannel
     public Guid? LinkedDeviceId { get; set; }
     public Guid? SymbolInstanceId { get; set; }
     public string TerminalReference { get; set; } = string.Empty;
+    [JsonIgnore]
     public bool IsSpare => string.IsNullOrWhiteSpace(Tag) && LinkedDeviceId is null && SymbolInstanceId is null;
 }
 
@@ -321,6 +329,7 @@ public sealed class Attachment
     public string Description { get; set; } = string.Empty;
     public DateTimeOffset Added { get; set; } = DateTimeOffset.Now;
     public byte[] Content { get; set; } = Array.Empty<byte>();
+    [JsonIgnore]
     public long Size => Content.LongLength;
 }
 

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DND.Electrical.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DND.Electrical.Reports/DND.Electrical.Reports.csproj" />
+    <ProjectReference Include="../DND.Electrical.Calculations/DND.Electrical.Calculations.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DND.Electrical.UnitTests" />
+    <InternalsVisibleTo Include="DND.Electrical.IntegrationTests" />
+  </ItemGroup>
+</Project>

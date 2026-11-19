@@ -215,7 +215,17 @@ public sealed class SymbolInstanceEntity : CadEntity, IExplodableEntity, IDxfBlo
         var local = Definition?.Graphics.Select(g => g.Clone(keepId: true)).ToList() ?? new List<CadEntity>();
         var attrs = new List<DxfAttribute>();
         foreach (var t in AttributeTexts())
-            attrs.Add(new DxfAttribute(t.Value == Display.GetValueOrDefault(SymbolAttributes.Tag) ? SymbolAttributes.Tag : AttributeNameFor(t), t.Value, t.Position, t.Height, 0, true));
+        {
+            if (t.Value == Display.GetValueOrDefault(SymbolAttributes.Tag))
+            {
+                // The displayed tag of contacts carries the cross-reference on a second line: export separately.
+                var lines = t.Value.Split('\n');
+                attrs.Add(new DxfAttribute(SymbolAttributes.Tag, lines[0], t.Position, t.Height, 0, true));
+                if (lines.Length > 1) attrs.Add(new DxfAttribute(SymbolAttributes.CrossReference, lines[1], t.Position + new Point2(0, -t.Height * 1.4), t.Height, 0, true));
+                continue;
+            }
+            attrs.Add(new DxfAttribute(AttributeNameFor(t), t.Value, t.Position, t.Height, 0, true));
+        }
         foreach (var (pin, w) in PinPositions())
             if (pin.ShowLabel) attrs.Add(new DxfAttribute("PIN_" + pin.Id, GetPinLabel(pin.Id), w + new Point2(0.8, 0), 1.8, 0, true));
         if (ContactMirror.Count > 0) attrs.Add(new DxfAttribute(SymbolAttributes.CrossReference, string.Join(" | ", ContactMirror), GraphicBounds.Min, 1.8, 0, true));

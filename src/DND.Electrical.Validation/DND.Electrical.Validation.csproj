@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DND.Electrical.Validation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DND.Electrical.Wiring/DND.Electrical.Wiring.csproj" />
+    <ProjectReference Include="../DND.Electrical.PLC/DND.Electrical.PLC.csproj" />
+    <ProjectReference Include="../DND.Electrical.Panel/DND.Electrical.Panel.csproj" />
+  </ItemGroup>
+</Project>

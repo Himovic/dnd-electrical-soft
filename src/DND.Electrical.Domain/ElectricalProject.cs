@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using DND.Electrical.CAD.Serialization;
 using DND.Electrical.Shared;
 using DND.Electrical.Symbols;
@@ -37,6 +38,7 @@ public sealed class ElectricalProject
 
     // ------------------------------------------------------------------ lookups
 
+    [JsonIgnore]
     public IEnumerable<Sheet> OrderedSheets => Sheets.OrderBy(s => s.Number);
 
     public Sheet? FindSheet(Guid id) => Sheets.FirstOrDefault(s => s.Id == id);

@@ -98,7 +98,7 @@ public static class SheetTemplate
         foreach (var e in Field(2, 1, "Project number", "{PROJECT.NUMBER}", 2.6)) yield return e;
         foreach (var e in Field(2, 2, "Reference / Site", "{PROJECT.REFERENCE} {PROJECT.SITE}", 2)) yield return e;
 
-        foreach (var e in Field(3, 0, "Customer", "{CUSTOMER.NAME}", 2.6, bold: true)) yield return e;
+        foreach (var e in Field(3, 0, "Customer", "{CUSTOMER.NAME}", 2.0)) yield return e;
         foreach (var e in Field(3, 1, "Function / Location", "{SHEET.FUNCTION} {SHEET.LOCATION}", 2.4)) yield return e;
         foreach (var e in Field(3, 2, "Status", "{PROJECT.STATUS}", 2.2)) yield return e;
 

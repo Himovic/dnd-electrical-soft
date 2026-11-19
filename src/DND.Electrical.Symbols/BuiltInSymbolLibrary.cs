@@ -301,6 +301,11 @@ public static class BuiltInSymbolLibrary
             .Rect(-5, -3, 5, 3).Line(-5, -3, 5, 3).Line(0, 10, 0, 3).Line(0, -3, 0, -10)
             .Pin("A1", 0, 10, PinDirection.Up).Pin("A2", 0, -10, PinDirection.Down).Build();
 
+        yield return new SymbolBuilder("IEC.SOCKET", "Socket outlet 2P+E", SymbolCategory.Connectors, "XS")
+            .Describe("Socket outlet with protective earth contact (final circuit).", "socket", "outlet", "prise de courant", "receptacle")
+            .Arc(0, -2, 6, 180, 180).Line(-6, -2, 6, -2).Line(-5, 10, -5, -2).Line(0, 10, 0, -2).Line(5, 10, 5, -2)
+            .Pin("L", -5, 10, PinDirection.Up).Pin("PE", 0, 10, PinDirection.Up).Pin("N", 5, 10, PinDirection.Up).Build();
+
         yield return new SymbolBuilder("IEC.HEATER", "Heating element", SymbolCategory.Actuators, "E")
             .Describe("Resistive heating element.", "heater", "resistance", "chauffage")
             .Rect(-2.5, -6, 2.5, 6).Line(-1.5, -4, -1.5, 4).Line(0, -4, 0, 4).Line(1.5, -4, 1.5, 4).Line(0, 10, 0, 6).Line(0, -6, 0, -10)
