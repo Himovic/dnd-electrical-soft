@@ -104,6 +104,21 @@ public sealed partial class ProjectPropertiesViewModel : DialogViewModel
     }
 }
 
+public sealed partial class RuleSettingRow : ObservableObject
+{
+    public RuleSettingRow(string id, string title, string defaultSeverity, bool enabled, string severity)
+    {
+        Id = id; Title = title; DefaultSeverity = defaultSeverity; _enabled = enabled; _severity = severity;
+    }
+
+    public string Id { get; }
+    public string Title { get; }
+    public string DefaultSeverity { get; }
+    public IReadOnlyList<string> Severities { get; } = new[] { "Default", "Error", "Warning", "Information" };
+    [ObservableProperty] private bool _enabled;
+    [ObservableProperty] private string _severity;
+}
+
 public sealed partial class SettingsViewModel : DialogViewModel
 {
     private readonly UserSettings _settings;
@@ -118,7 +133,15 @@ public sealed partial class SettingsViewModel : DialogViewModel
         _wireFormat = project?.WireNumberFormat ?? string.Empty; _tagFormat = project?.DeviceTagFormat ?? string.Empty;
         _perPotential = project?.WireNumberingMode != WireNumberingMode.PerWire;
         _voltage = project?.NominalVoltage ?? 400; _profile = project?.StandardProfileId ?? "IEC";
+        if (project is not null)
+            foreach (var r in Validation.BuiltInRules.All)
+            {
+                var cfg = project.ValidationRules.GetValueOrDefault(r.Id);
+                Rules.Add(new RuleSettingRow(r.Id, r.Title, r.DefaultSeverity.ToString(), cfg?.Enabled ?? true, cfg?.SeverityOverride ?? "Default"));
+            }
     }
+
+    public System.Collections.ObjectModel.ObservableCollection<RuleSettingRow> Rules { get; } = new();
 
     public override string Title => "Settings";
     public bool HasProject => _project is not null;
@@ -156,6 +179,9 @@ public sealed partial class SettingsViewModel : DialogViewModel
         _project.WireNumberFormat = WireFormat; _project.DeviceTagFormat = TagFormat;
         _project.WireNumberingMode = PerPotential ? WireNumberingMode.PerPotential : WireNumberingMode.PerWire;
         _project.NominalVoltage = Voltage; _project.StandardProfileId = Profile;
+        _project.ValidationRules.Clear();
+        foreach (var r in Rules.Where(r => !r.Enabled || r.Severity != "Default"))
+            _project.ValidationRules[r.Id] = new ValidationRuleSetting(r.Enabled, r.Severity == "Default" ? null : r.Severity);
     }
 }
 

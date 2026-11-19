@@ -965,6 +965,57 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ToggleTheme() => IsDarkTheme = !IsDarkTheme;
 
+    /// <summary>Lists plugins and lets an administrator trust verified plugins (by assembly hash).</summary>
+    [RelayCommand]
+    private void ManagePlugins()
+    {
+        var pm = _s.Plugins;
+        pm.TrustedHashes.UnionWith(_s.Settings.TrustedPluginHashes);
+        var found = pm.DiscoverAndLoad();
+        if (found.Count == 0) { _s.Dialogs.ShowInfo("Plugins", $"No plugins found in {_s.Paths.Plugins}."); return; }
+        var text = string.Join("\n", found.Select(p => $"• {p.Manifest?.Name ?? Path.GetFileName(p.Folder)} {p.Manifest?.Version}: {p.State} – {p.Message}"));
+        var untrusted = found.Where(p => p.State == DND.Electrical.Plugins.PluginState.Untrusted && p.ActualSha256 is not null).ToList();
+        if (untrusted.Count == 0 || !_s.Permissions.Has(AppPermission.ManagePlugins)) { _s.Dialogs.ShowInfo("Plugins", text); return; }
+        foreach (var p in untrusted)
+        {
+            if (!_s.Dialogs.Confirm("Trust plugin", $"{text}\n\nTrust \"{p.Manifest!.Name}\" by {p.Manifest.Author}?\nPermissions: {p.Manifest.Permissions}\nSHA-256: {p.ActualSha256}\n\nOnly trust plugins from sources you know.")) continue;
+            _s.Settings.TrustedPluginHashes.Add(p.ActualSha256!);
+            pm.TrustedHashes.Add(p.ActualSha256!);
+        }
+        SaveSettings();
+        pm.UnloadAll();
+        var reloaded = pm.DiscoverAndLoad();
+        Log($"Plugins: {reloaded.Count(p => p.State == DND.Electrical.Plugins.PluginState.Loaded)} loaded.");
+    }
+
+    [RelayCommand(CanExecute = nameof(IsProjectOpen))]
+    private async Task DuplicateProjectAsync()
+    {
+        if (Session?.FilePath is not { } source || Session.IsDirty) { _s.Dialogs.ShowInfo("Duplicate project", "Save the project first."); return; }
+        var number = _s.Dialogs.PromptText("Duplicate project", "Number of the new project", Session.Project.Info.Number + "-COPY");
+        if (string.IsNullOrWhiteSpace(number)) return;
+        var target = _s.Dialogs.SaveFile("Save duplicate as", FileFilters.Project, SafeName(number) + ProductInfo.ProjectFileExtension);
+        if (target is null) return;
+        await _s.Projects.DuplicateAsync(source, target, number.Trim());
+        Log($"Duplicate created: {target}");
+        if (_s.Dialogs.Confirm("Duplicate project", "Open the duplicate now?")) await OpenPathAsync(target);
+    }
+
+    [RelayCommand(CanExecute = nameof(IsProjectOpen))]
+    private void SetCompanyLogo()
+    {
+        var file = _s.Dialogs.OpenFile("Company logo for title blocks and reports", FileFilters.Image);
+        if (file is null) return;
+        try
+        {
+            var a = _s.Projects.AddAttachment(file, "Company logo");
+            Session!.Project.Info.CompanyLogoAttachmentId = a.Id;
+            RefreshAll();
+            Log("Company logo set.");
+        }
+        catch (InvalidOperationException ex) { _s.Dialogs.ShowError("Company logo", ex.Message); }
+    }
+
     public IReadOnlyList<PaletteCommand> PaletteCommands() => new List<PaletteCommand>
     {
         new("New project", "File", "Ctrl+N", NewProjectCommand), new("Open project", "File", "Ctrl+O", OpenProjectCommand),
@@ -985,7 +1036,9 @@ public sealed partial class MainViewModel : ObservableObject
         new("Import DXF into sheet", "Tools", "", ImportDxfCommand), new("Import product catalogue", "Tools", "", ImportCatalogCommand),
         new("Symbol editor", "Tools", "", OpenSymbolEditorCommand), new("Settings", "Tools", "", OpenSettingsCommand), new("Engineering assistant", "Tools", "", OpenAssistantCommand),
         new("Help center", "Help", "F1", OpenHelpCommand), new("About", "Help", "", OpenAboutCommand),
-    };
+        new("Plugins", "Tools", "", ManagePluginsCommand), new("Duplicate project", "Project", "", DuplicateProjectCommand),
+        new("Set company logo", "Project", "", SetCompanyLogoCommand),
+    }.Concat(_s.Plugins.Commands.Select(c => new PaletteCommand(c.Title, c.Category, "", new RelayCommand(c.Execute)))).ToList();
 
     // ================================================================== search & tutorials
 

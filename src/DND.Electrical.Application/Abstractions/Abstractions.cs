@@ -69,6 +69,9 @@ public sealed class UserSettings
     public string AssistantProvider { get; set; } = "local";
     public bool FirstRun { get; set; } = true;
 
+    /// <summary>SHA-256 hashes of plugin assemblies trusted by an administrator.</summary>
+    public HashSet<string> TrustedPluginHashes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     public void AddRecent(string path, int max = 12)
     {
         RecentProjects.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
