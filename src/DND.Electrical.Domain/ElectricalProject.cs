@@ -36,6 +36,17 @@ public sealed class ElectricalProject
     public List<ValidationRunRecord> ValidationRuns { get; set; } = new();
     public List<ProjectSymbol> Symbols { get; set; } = new();
 
+    // ---- lifecycle and project management
+    public List<ProjectMember> Members { get; set; } = new();
+    public List<ProjectTask> Tasks { get; set; } = new();
+    public List<Milestone> Milestones { get; set; } = new();
+    public List<EngineeringIssue> Issues { get; set; } = new();
+    public List<ApprovalRecord> Approvals { get; set; } = new();
+    public List<CommentRecord> Comments { get; set; } = new();
+    public List<DocumentRegisterEntry> DocumentRegister { get; set; } = new();
+    public List<MaintenanceRecord> Maintenance { get; set; } = new();
+    public List<CommissioningRecord> Commissioning { get; set; } = new();
+
     // ------------------------------------------------------------------ lookups
 
     [JsonIgnore]

@@ -17,6 +17,66 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("DND.Electrical.Domain.ApprovalRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Approver")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestedAt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequestedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Revision")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SubjectKind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SubjectTitle")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("Approvals", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.Attachment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -464,6 +524,90 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("CatalogProducts", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.CommentRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("At")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("TargetId");
+
+                    b.ToTable("Comments", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.CommissioningRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("By")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MeasuredValue")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ObjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Remarks")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Test")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("CommissioningRecords", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.Device", b =>
                 {
                     b.Property<Guid>("Id")
@@ -527,6 +671,51 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.HasIndex("Tag");
 
                     b.ToTable("Devices", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.DocumentRegisterEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("AttachmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("Issued")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Revision")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("DocumentRegister", (string)null);
                 });
 
             modelBuilder.Entity("DND.Electrical.Domain.ElectricalLoad", b =>
@@ -623,6 +812,149 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Projects", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.EngineeringIssue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AssignedTo")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Created")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RaisedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Resolution")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("Resolved")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SheetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("EngineeringIssues", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.MaintenanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("NextDue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ObjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Technician")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("MaintenanceRecords", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.Milestone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("Completed")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Due")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Milestones", (string)null);
                 });
 
             modelBuilder.Entity("DND.Electrical.Domain.Motor", b =>
@@ -935,6 +1267,42 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("Procurement", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.ProjectMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Discipline")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectMembers", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.ProjectRevision", b =>
                 {
                     b.Property<Guid>("Id")
@@ -973,6 +1341,57 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Revisions", (string)null);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Assignee")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Discipline")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ObjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectTasks", (string)null);
                 });
 
             modelBuilder.Entity("DND.Electrical.Domain.Sheet", b =>
@@ -1202,6 +1621,14 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("Connections", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.ApprovalRecord", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Approvals")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.Attachment", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
@@ -1266,10 +1693,34 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.CommentRecord", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.CommissioningRecord", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Commissioning")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.Device", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
                         .WithMany("Devices")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.DocumentRegisterEntry", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("DocumentRegister")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1366,6 +1817,9 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
+                            b1.Property<int>("Phase")
+                                .HasColumnType("INTEGER");
+
                             b1.Property<string>("Reference")
                                 .IsRequired()
                                 .HasColumnType("TEXT");
@@ -1430,6 +1884,30 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.Navigation("Symbols");
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.EngineeringIssue", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Issues")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.MaintenanceRecord", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Maintenance")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.Milestone", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Milestones")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.Motor", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
@@ -1478,10 +1956,26 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.ProjectMember", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Members")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.ProjectRevision", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
                         .WithMany("Revisions")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("DND.Electrical.Domain.ProjectTask", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1530,6 +2024,8 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DND.Electrical.Domain.ElectricalProject", b =>
                 {
+                    b.Navigation("Approvals");
+
                     b.Navigation("Attachments");
 
                     b.Navigation("AuditEvents");
@@ -1542,9 +2038,23 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Catalog");
 
+                    b.Navigation("Comments");
+
+                    b.Navigation("Commissioning");
+
                     b.Navigation("Devices");
 
+                    b.Navigation("DocumentRegister");
+
+                    b.Navigation("Issues");
+
                     b.Navigation("Loads");
+
+                    b.Navigation("Maintenance");
+
+                    b.Navigation("Members");
+
+                    b.Navigation("Milestones");
 
                     b.Navigation("Motors");
 
@@ -1555,6 +2065,8 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.Navigation("Revisions");
 
                     b.Navigation("Sheets");
+
+                    b.Navigation("Tasks");
 
                     b.Navigation("TerminalStrips");
 

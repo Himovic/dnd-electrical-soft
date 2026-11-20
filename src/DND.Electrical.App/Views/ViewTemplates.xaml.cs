@@ -18,6 +18,13 @@ public partial class ViewTemplates
         if (sender is ListBox { Tag: CalculationsViewModel vm, SelectedItem: CalculationRecord record }) vm.ShowStoredCommand.Execute(record);
     }
 
+    /// <summary>Marks the project modified after an in-place edit of a project-management list.</summary>
+    private void ProjectGrid_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
+    {
+        if (e.EditAction == System.Windows.Controls.DataGridEditAction.Commit && sender is System.Windows.FrameworkElement { DataContext: DND.Electrical.Presentation.ViewModels.ProjectManagementViewModel vm })
+            vm.Changed();
+    }
+
     private void SymbolCommand_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || sender is not TextBox { Tag: CadEditor editor } box) return;

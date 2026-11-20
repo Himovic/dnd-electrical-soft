@@ -427,6 +427,86 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== Project management ============================== -->
+    <DataTemplate DataType="{x:Type vm:ProjectManagementViewModel}">
+        <DockPanel Margin="6">
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4">
+                <TextBlock Text="Lifecycle phase:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Phases}" SelectedItem="{Binding Phase}" Width="200"/>
+                <TextBlock Text="Engineering object:" VerticalAlignment="Center" Margin="16,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" DisplayMemberPath="Tag" Width="140"/>
+                <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Margin="16,0" Style="{StaticResource Subtle}"/>
+            </StackPanel>
+            <TabControl>
+                <TabItem Header="Engineering objects">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <DockPanel Margin="4">
+                            <TextBlock DockPanel.Dock="Top" Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,0,0,4"
+                                       Text="Every representation of the selected object (same identity): schematic symbols, equipment, cabinet, PLC, cables, loads, catalogue, calculations, maintenance, commissioning."/>
+                            <DataGrid ItemsSource="{Binding Representations}" AutoGenerateColumns="True" IsReadOnly="True"/>
+                        </DockPanel>
+                        <DockPanel Grid.Column="1" Margin="4">
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                                <Button Content="Detect conflicts" Command="{Binding DetectConflictsCommand}" Style="{StaticResource FlatButton}"/>
+                                <Button Content="Synchronise selected…" Command="{Binding SynchronizeCommand}" Style="{StaticResource FlatButton}"/>
+                            </StackPanel>
+                            <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Text="Conflicts are never resolved automatically: choose the authoritative representation and confirm. Every synchronisation is recorded in the audit trail."/>
+                            <DataGrid ItemsSource="{Binding Conflicts}" SelectedItem="{Binding SelectedConflict}" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Object" Binding="{Binding Object}"/>
+                                    <DataGridTextColumn Header="Field" Binding="{Binding Field}"/>
+                                    <DataGridTextColumn Header="Values" Binding="{Binding Values}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Members">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add member…" Command="{Binding AddMemberCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Members}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Tasks">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add task…" Command="{Binding AddTaskCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Tasks}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Milestones">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add milestone…" Command="{Binding AddMilestoneCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Milestones}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Issues">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Raise issue…" Command="{Binding RaiseIssueCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Issues}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Approvals">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <Button Content="Request approval…" Command="{Binding RequestApprovalCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Approve…" Command="{Binding ApproveCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Reject…" Command="{Binding RejectCommand}" Style="{StaticResource FlatButton}"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                   Text="Decisions require the Approver, Project manager or Administrator role and cannot be made by the requester (four-eyes principle). Your user name is taken from Settings."/>
+                        <DataGrid ItemsSource="{Binding Approvals}" SelectedItem="{Binding SelectedApproval}" AutoGenerateColumns="True" IsReadOnly="True"/>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Document register">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add document…" Command="{Binding AddDocumentCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Documents}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Maintenance">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add record for selected object…" Command="{Binding AddMaintenanceCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Maintenance}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+                <TabItem Header="Commissioning">
+                    <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add test for selected object…" Command="{Binding AddCommissioningCommand}" Style="{StaticResource FlatButton}"/>
+                        <DataGrid ItemsSource="{Binding Commissioning}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="ProjectGrid_CellEditEnding"/></DockPanel>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== Assistant ============================== -->
     <DataTemplate DataType="{x:Type vm:AssistantViewModel}">
         <DockPanel Margin="10">

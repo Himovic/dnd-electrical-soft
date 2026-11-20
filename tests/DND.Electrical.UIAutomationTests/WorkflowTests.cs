@@ -319,3 +319,63 @@ public class LicensingWorkflowTests
         Assert.Contains(vm.Details, d => d.Label == "Licence ID" && d.Value == "LIC-TEST-SUITE");
     }
 }
+
+public class ProjectManagementWorkflowTests
+{
+    [Fact]
+    public async Task Project_management_window_tracks_lifecycle_and_resolves_conflicts_on_confirmation()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-IND-001");
+        h.Main.OpenProjectManagementCommand.Execute(null);
+        var pm = Assert.IsType<ProjectManagementViewModel>(h.Dialogs.Shown.Last());
+        var p = h.Main.Session!.Project;
+
+        pm.Phase = DND.Electrical.Domain.LifecyclePhase.Commissioning;
+        Assert.Equal(DND.Electrical.Domain.LifecyclePhase.Commissioning, p.Info.Phase);
+        Assert.True(h.Main.Session.IsDirty);
+
+        h.Dialogs.Prompts.Enqueue("Approver One");
+        pm.AddMemberCommand.Execute(null);
+        p.Members[0].Role = DND.Electrical.Domain.ProjectRole.Approver;
+        h.Dialogs.Prompts.Enqueue("Approver One");
+        pm.RequestApprovalCommand.Execute(null);
+        var approval = Assert.Single(pm.Approvals);
+        // The current user requested it, and is not a member with an approver role -> refused, nothing changes.
+        pm.SelectedApproval = approval;
+        h.Dialogs.Prompts.Enqueue("ok");
+        pm.ApproveCommand.Execute(null);
+        Assert.Equal(DND.Electrical.Domain.ApprovalStatus.Pending, approval.Status);
+        Assert.Contains(h.Dialogs.Log, l => l.StartsWith("error:"));
+
+        var motor = p.Motors.First(m => m.DeviceId is not null);
+        pm.SelectedDevice = p.FindDevice(motor.DeviceId!.Value);
+        Assert.Contains(pm.Representations, r => r.Kind == "Motor");
+        motor.Tag += "-OLD";
+        pm.DetectConflictsCommand.Execute(null);
+        pm.SelectedConflict = pm.Conflicts.Single(c => c.Field == "Tag");
+
+        h.Dialogs.ConfirmAnswer = false;          // user declines: nothing is synchronised
+        h.Dialogs.Prompts.Enqueue("SchematicSymbol");
+        pm.SynchronizeCommand.Execute(null);
+        Assert.EndsWith("-OLD", motor.Tag);
+
+        h.Dialogs.ConfirmAnswer = true;
+        h.Dialogs.Prompts.Enqueue("SchematicSymbol");
+        pm.SynchronizeCommand.Execute(null);
+        Assert.Equal(pm.SelectedDevice!.Tag, motor.Tag);
+        Assert.DoesNotContain(pm.Conflicts, c => c.Field == "Tag");
+    }
+
+    [Fact]
+    public async Task Project_management_requires_project_module()
+    {
+        using var h = new UiHarness();
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        var main = new MainViewModel(h.Services with { Licensing = limited });
+        await main.OpenDemoCommand.ExecuteAsync("DEMO-IND-001");
+        main.OpenProjectManagementCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "PROJECT");
+        Assert.DoesNotContain(h.Dialogs.Shown, v => v is ProjectManagementViewModel);
+    }
+}

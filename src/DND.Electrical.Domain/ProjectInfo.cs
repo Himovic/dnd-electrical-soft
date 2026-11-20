@@ -27,6 +27,7 @@ public sealed class ProjectInfo
 
     public ProjectIndustry Industry { get; set; } = ProjectIndustry.General;
     public ProjectStatus Status { get; set; } = ProjectStatus.Draft;
+    public LifecyclePhase Phase { get; set; } = LifecyclePhase.DetailedEngineering;
     public string CurrentRevision { get; set; } = "A";
     public string TemplateId { get; set; } = string.Empty;
 

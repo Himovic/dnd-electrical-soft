@@ -147,6 +147,7 @@
                     </StackPanel></GroupBox>
                     <GroupBox Header="Data" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE80A;" Content="Engineering data" Command="{Binding OpenEngineeringDataCommand}" ToolTip="BOM, cables, terminals, PLC I/O, motors, loads, cabinet layout"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xE8F9;" Content="Project mgmt" Command="{Binding OpenProjectManagementCommand}" ToolTip="Lifecycle phase, members, tasks, milestones, issues, approvals, document register, maintenance, commissioning, engineering objects"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE9D5;" Content="Validate" Command="{Binding ValidateCommand}"/>
                     </StackPanel></GroupBox>
                 </StackPanel>

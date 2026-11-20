@@ -90,6 +90,15 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
             Children(e, x => x.Attachments);
             Children(e, x => x.AuditEvents);
             Children(e, x => x.ValidationRuns);
+            Children(e, x => x.Members);
+            Children(e, x => x.Tasks);
+            Children(e, x => x.Milestones);
+            Children(e, x => x.Issues);
+            Children(e, x => x.Approvals);
+            Children(e, x => x.Comments);
+            Children(e, x => x.DocumentRegister);
+            Children(e, x => x.Maintenance);
+            Children(e, x => x.Commissioning);
             e.OwnsMany(x => x.Symbols, s =>
             {
                 s.ToTable("ProjectSymbols");
@@ -195,6 +204,15 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
         b.Entity<Attachment>(e => { e.ToTable("Attachments"); e.Ignore(x => x.Size); });
         b.Entity<AuditEvent>(e => { e.ToTable("AuditEvents"); e.HasIndex(x => x.Timestamp); });
         b.Entity<ValidationRunRecord>(e => e.ToTable("ValidationRuns"));
+        b.Entity<ProjectMember>(e => { e.ToTable("ProjectMembers"); e.Property(x => x.Role).HasConversion<string>().HasMaxLength(30); });
+        b.Entity<ProjectTask>(e => { e.ToTable("ProjectTasks"); e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20); e.Property(x => x.Phase).HasConversion<string>().HasMaxLength(40); });
+        b.Entity<Milestone>(e => { e.ToTable("Milestones"); e.Property(x => x.Phase).HasConversion<string>().HasMaxLength(40); });
+        b.Entity<EngineeringIssue>(e => { e.ToTable("EngineeringIssues"); e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20); e.Property(x => x.Severity).HasConversion<string>().HasMaxLength(20); });
+        b.Entity<ApprovalRecord>(e => { e.ToTable("Approvals"); e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20); e.HasIndex(x => x.SubjectId); });
+        b.Entity<CommentRecord>(e => { e.ToTable("Comments"); e.HasIndex(x => x.TargetId); });
+        b.Entity<DocumentRegisterEntry>(e => e.ToTable("DocumentRegister"));
+        b.Entity<MaintenanceRecord>(e => { e.ToTable("MaintenanceRecords"); e.HasIndex(x => x.ObjectId); });
+        b.Entity<CommissioningRecord>(e => { e.ToTable("CommissioningRecords"); e.Property(x => x.Result).HasConversion<string>().HasMaxLength(30); e.HasIndex(x => x.ObjectId); });
         b.Entity<ConnectionRecord>(e => { e.ToTable("Connections"); e.HasIndex(x => x.WireNumber); e.HasIndex(x => x.ProjectId); });
 
         foreach (var entity in b.Model.GetEntityTypes().ToList())
