@@ -1,117 +1,127 @@
-# D&D Electrical Engineering Suite
+# D&D Electrical & Automation Engineering Suite
 
 ![logo](resources/Icons/dnd-logo-64.png)
+
+**D&D Engineering Suite** — *One Platform. Multiple Engineering Disciplines. Unlimited Possibilities.*
 
 **Author & Developer:** D&D | Data&Development
 **© 2026 D&D | Data&Development. All rights reserved.**
 
-An integrated electrical engineering environment: 2D electrical CAD with real connectivity, symbol libraries, wiring, cables and terminals, PLC I/O, control-cabinet layout, engineering calculations, validation and documentation generation.
+A modular engineering platform for electrical, automation and power systems: electrical CAD with real connectivity, PLC and instrumentation, power system studies (D&D PowerStudio), 3D cabinets and trays, IFC/BIM exchange, digital twin, documentation, project lifecycle and integrations — built around one engineering object identity shared by every representation.
 
-> Calculation results are preliminary engineering aids; the software does not certify compliance with any standard. Demonstration projects contain fictional data only.
+> Calculation and study results are preliminary engineering aids; the software does not certify compliance with any standard. Demonstration projects contain fictional data only. Simulated data is always labelled as simulated.
 
-## Status (version 0.4.0)
+## Modules (version 0.5.0)
 
-| Area | State | Verification |
+| Code | Module | Highlights |
 |---|---|---|
-| Geometry kernel and 2D CAD engine (entities, layers, spatial index, snapping, undo/redo, tools, command line) | Implemented | Unit tests |
-| Rendering (screen / PNG / vector PDF / SVG) with SkiaSharp | Implemented | Unit + integration tests, visual inspection |
-| DXF R12 export (symbols as blocks with attributes) and import | Implemented | Round-trip tests; exports read by `ezdxf` with 0 errors |
-| Symbol model, libraries, 46 built-in IEC-style symbols, custom libraries, symbol editor | Implemented | Unit + UI workflow tests |
-| Schematic editor: insertion, wiring, T-junctions, rubber-banding, device lifecycle | Implemented | Unit tests (editor driven by simulated input) |
-| Connectivity graph, potentials, short-circuit detection, interruption points | Implemented | Unit tests |
-| Wire numbering, device tagging, cross-references (coil ↔ contacts) | Implemented | Unit tests |
-| Cables, terminals, terminal diagrams, PLC (profiles, addressing, I/O list), cabinet layout | Implemented | Unit + integration tests |
-| Calculations (11 calculators) with transparent reports and standard profiles | Implemented | Hand-computed reference tests |
-| Validation engine (22 rules) | Implemented | Demo projects validate with 0 errors / 0 warnings |
-| Reports: PDF (EN/FR), XLSX, CSV; handover package; JSON/XML interchange | Implemented | Integration tests; PDFs read by `pypdf`, workbooks by `openpyxl` |
-| Persistence: EF Core + SQLite per project (atomic save, migrations), central store (PostgreSQL-ready) | Implemented | Integration tests (SQLite). PostgreSQL path compiled but **not executed** in CI |
-| Backups, locking, autosave/recovery, archives with safe extraction | Implemented | Integration tests |
-| Help center, 27 manual articles, tutorials, documentation administration | Implemented | Integration + UI workflow tests |
-| Plugin host (manifest, version, SHA-256, trust list, permissions) | Implemented | End-to-end test with sample plugin |
-| View models (all UI behaviour) | Implemented | 11 UI workflow tests |
-| WPF desktop shell | Implemented, compiles | **Not executed in the development environment (Linux).** Must be smoke-tested on Windows |
-| CLI `dnd-electrical` (Windows/Linux/macOS) | Implemented | Used to generate and verify demos and exports |
-| Windows installer | Inno Setup script provided | **Not built** in the development environment |
+| ELEC | Electrical Engineering | Schematics, connectivity, wiring, cables, terminals, cabinet 2D, calculations, 22 validation rules |
+| AUTO | Automation Engineering | PLC I/O, instruments, loops, alarms, cause and effect, control architecture, loop diagrams |
+| POWER | D&D PowerStudio | Newton–Raphson load flow (IEEE 14-bus benchmarked), IEC 60909 short circuit, protection coordination, harmonics |
+| 3D | 3D Engineering | Cabinet 3D from 2D, trays, clash/clearance, sections, explode, glTF/GLB/STL |
+| BIM | BIM Engineering | IFC4 export/import (xBIM) with engineering identities |
+| INFRA | Infrastructure | Data center, solar, railway, oil and gas templates and calculators |
+| TWIN | Digital Twin | Modbus TCP, MQTT, labelled simulator, live alarms and trends |
+| AI | Engineering Assistant | Local or Claude provider, confirmed proposals, audit trail |
+| DOCS | Documentation | PDF/XLSX/CSV/DXF/SVG/PNG, handover packages |
+| CATALOG | Equipment Catalog | Manufacturer-neutral, verification status, demo flagging |
+| PROJECT | Project Management | Lifecycle, approvals, registers, engineering object conflicts |
+| INTEGRATION | Integrations | ERP BOM file drop, CMMS assets, signed webhook |
 
-See [Known limitations](#known-limitations).
+Exact status of every feature — *implemented and tested*, *not fully validated*, *partial*, *simulated*, *planned* or *blocked by external dependency* — is in the [feature status register](MODULES.md#feature-status-register).
+
+## Documentation
+
+| Document | Content |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Layers, projects, engineering object identity, licence enforcement points |
+| [MODULES.md](MODULES.md) | Modules and feature status register |
+| [LICENSING.md](LICENSING.md) | Licence models, security design, server and portal |
+| [DATABASE.md](DATABASE.md) | Project database schema, migrations, licence server database |
+| [INTEGRATIONS.md](INTEGRATIONS.md) | Connectors, field protocols, exchange formats, AI providers |
+| [ENGINEERING_VALIDATION.md](ENGINEERING_VALIDATION.md) | References, benchmarks and tolerances of every calculation and study |
+| [ROADMAP.md](ROADMAP.md) | Planned work |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [documentation/](documentation) | User manual (in-app help), developer guide, installation |
+
+## Demonstration projects
+
+`DEMO-IND-001` motor control · `DEMO-AUT-002` automation · `DEMO-PWR-003` distribution · `DEMO-CAB-004` control cabinet · `DEMO-BLD-005` building · `DEMO-MFG-006` manufacturing packaging line · `DEMO-RAIL-007` railway station auxiliary power · `DEMO-DC-008` 2N data hall · `DEMO-OG-009` gas compression skid · `DEMO-PV-010` 2.5 MWp PV plant. All validate with zero errors; all data is fictional.
 
 ## Repository layout
 
 ```
 src/
-  DND.Electrical.Shared          product identity, results, comparers
-  DND.Electrical.Core            geometry kernel
-  DND.Electrical.CAD             CAD model, editing, tools, DXF
-  DND.Electrical.Rendering       SkiaSharp renderer, PNG/PDF/SVG export
-  DND.Electrical.Symbols         symbol model, libraries, built-in IEC library
-  DND.Electrical.Domain          project aggregate and engineering entities
-  DND.Electrical.Schematic       schematic entities, connectivity, numbering, editor
-  DND.Electrical.Wiring          connection lists, terminal diagrams, cables
-  DND.Electrical.PLC             PLC profiles, addressing, I/O lists
-  DND.Electrical.Panel           cabinet layout
-  DND.Electrical.Calculations    calculation engine and standard profiles
-  DND.Electrical.Validation      validation engine and rules
-  DND.Electrical.Reports         report tables, PDF/XLSX/CSV writers
-  DND.Electrical.Documentation   Markdown, help library, tutorials
-  DND.Electrical.Plugins         plugin contracts and host
-  DND.Electrical.Application     use cases: projects, templates, demos, exports, services
-  DND.Electrical.Infrastructure  EF Core persistence, file services
-  DND.Electrical.Presentation    MVVM view models (cross-platform)
-  DND.Electrical.App             WPF desktop application (Windows)
-  DND.Electrical.Cli             command-line tool
-samples/                          sample plugin
-tests/                            unit, integration and UI workflow tests
-resources/                        branding, icons, fonts, symbols, demo projects
-documentation/                    user manual (in-app help), architecture, guides
-scripts/, installers/             build, publish and installer scripts
+  DND.Electrical.Shared / Core / CAD / Rendering / Symbols     platform, geometry, CAD, rendering, symbols
+  DND.Electrical.Domain / Schematic / Wiring / PLC / Panel     engineering model and engines
+  DND.Electrical.Calculations / Validation / Reports           calculations, rules, reports
+  DND.Electrical.Power                                         D&D PowerStudio engines
+  DND.Electrical.ThreeD / Bim                                  3D engine, IFC exchange
+  DND.Electrical.Twin                                          Modbus TCP, MQTT, simulator
+  DND.Electrical.Licensing / LicenseServer / LicenseTool       licensing client, server + portal, issuing tool
+  DND.Electrical.Documentation / Plugins                       help, tutorials, plugin host
+  DND.Electrical.Application / Infrastructure                  use cases and services, persistence
+  DND.Electrical.Presentation / App / Cli                      view models, WPF desktop, command line
+tests/        unit, integration, UI workflow and licensing tests (288)
+scripts/      build, publish and third-party verification scripts (exports, glTF, 3D, IFC)
+resources/, documentation/, installers/, samples/
 ```
 
-## Building
+## Building and testing
 
-Requirements: .NET 10 SDK. The WPF application builds on Windows (and compiles on Linux thanks to `EnableWindowsTargeting`, but only runs on Windows).
+Requirements: .NET 10 SDK. The WPF application builds on Windows (it also compiles on Linux through `EnableWindowsTargeting`, but runs only on Windows).
 
 ```bash
-dotnet build DND-Electrical-Engineering-Suite.sln
+./scripts/build.sh
 ```
 
 ```bash
 dotnet test tests/DND.Electrical.UnitTests
 ```
 
+The build script runs all four test suites. Third-party verification of exports (also run in CI):
+
 ```bash
-dotnet test tests/DND.Electrical.IntegrationTests
+python3 scripts/verify-exports.py out/handover
 ```
 
 ```bash
-dotnet test tests/DND.Electrical.UIAutomationTests
+python3 scripts/verify-ifc.py out/cab.ifc
 ```
 
-Run the desktop application (Windows):
+## Command line
 
 ```bash
-dotnet run --project src/DND.Electrical.App
+dotnet run --project src/DND.Electrical.Cli -- license evaluation
 ```
-
-Command-line tool (any OS):
 
 ```bash
 dotnet run --project src/DND.Electrical.Cli -- demo all --out ./demo
 ```
 
 ```bash
-dotnet run --project src/DND.Electrical.Cli -- export ./demo/DEMO-IND-001.dndx --format handover --out ./handover
+dotnet run --project src/DND.Electrical.Cli -- power sample:ieee14 --study lf
 ```
 
-See [documentation/DeveloperGuide](documentation/DeveloperGuide/DeveloperGuide.md) and [documentation/Installation](documentation/Installation/Installation.md).
+```bash
+dotnet run --project src/DND.Electrical.Cli -- model3d ./demo/DEMO-CAB-004.dndx --out cab.glb --ifc cab.ifc
+```
+
+```bash
+dotnet run --project src/DND.Electrical.Cli -- integrate ./demo/DEMO-OG-009.dndx --connector cmms-assets --target ./cmms
+```
+
+Desktop application (Windows):
+
+```bash
+dotnet run --project src/DND.Electrical.App
+```
 
 ## Known limitations
 
-- The WPF shell has been compiled but not run in this development environment; a Windows smoke test (see `documentation/DeveloperGuide/Testing.md`) is required before release. Docking is implemented with resizable panels (no floating/undockable panels yet).
-- Current-carrying capacity data covers copper conductors, reference methods C and E only; values are transcribed from IEC 60364-5-52 and must be verified against the licensed standard. Aluminium cable sizing, buried installation methods, harmonic and thermal short-circuit checks are not implemented. IEC 61439 verification is not implemented (profile documents this).
-- Short-circuit calculation: maximum three-phase current only (no line-to-earth, no motor contribution).
-- DWG is not supported. DXF import does not read HATCH, SPLINE, ELLIPSE or binary DXF.
-- PLC profiles are addressing templates, not vendor catalogues, and there is no integration with vendor PLC programming software.
-- The engineering assistant is an offline, rule-based provider; the `IAssistantProvider` interface allows adding an AI provider later.
-- Central multi-user deployment: the PostgreSQL store and role model exist, but authentication, a server and real-time collaboration are not implemented. A REST API is planned (not implemented).
-- 3D cabinet visualisation, Arabic localisation and licence activation are planned.
-- The installer script has not been compiled here (requires Inno Setup on Windows).
+- The WPF shell, including the new PowerStudio, Automation, 3D (HelixToolkit), Digital twin, Integrations and Project management windows, compiles but has not been run in this development environment; a Windows smoke test is required before release. The installer script has not been compiled here.
+- PowerStudio: no asynchronous motor contributions, decaying components or method C peak factor; MCB bands are envelopes from IEC 60898-1 conventional values, not manufacturer curves; arc-flash requires licensed IEEE 1584 data (not implemented).
+- Cable current-carrying capacity data covers copper, methods C and E only, transcribed from IEC 60364-5-52 and to be verified against the licensed standard.
+- 3D/BIM: box-based geometry; IFC import converts extruded rectangular bodies only; STEP/IGES and OPC UA are blocked by external dependencies.
+- Hazardous-area zones and Ex markings are recorded from user input, never derived or approved by the software.
+- The Claude provider is tested against a mocked HTTP endpoint; live use requires the user's own API key. DWG is not supported. The PostgreSQL central store is not executed in CI; multi-user collaboration is planned.

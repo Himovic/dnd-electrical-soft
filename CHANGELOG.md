@@ -2,7 +2,7 @@
 
 All notable changes to **D&D Electrical & Automation Engineering Suite** (© 2026 D&D | Data&Development).
 
-## [0.5.0] – unreleased (in development)
+## [0.5.0] – 2026-11-20
 
 ### Added
 - Rebranding to D&D Electrical & Automation Engineering Suite (short name D&D Engineering Suite).
@@ -21,6 +21,9 @@ All notable changes to **D&D Electrical & Automation Engineering Suite** (© 202
 - AI module: Claude provider (official Anthropic SDK, structured output, server-side refusal fallbacks), opt-in project data sharing, encrypted API key storage, accept/reject per proposal, AI interaction audit trail stored in the project.
 - INTEGRATION module: connector architecture with ERP BOM file drop, CMMS asset register and HMAC-signed webhook; planned connectors listed but not executable; `integrate` CLI command.
 - 2D cabinet check now also covers door-mounted devices.
+
+- Documentation: ARCHITECTURE.md, MODULES.md (feature status register), DATABASE.md, INTEGRATIONS.md, ENGINEERING_VALIDATION.md, ROADMAP.md; README and LICENSING updated.
+- 288 automated tests (unit, integration, UI workflow, licensing).
 
 ### Fixed
 - DEMO-IND-001: the five door-mounted pilot devices were all placed at the same position (found by the new 3D clash detection).
