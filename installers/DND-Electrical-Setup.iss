@@ -42,10 +42,13 @@ Name: "demos"; Description: "Install the demonstration projects (fictional data)
 [Files]
 Source: "{#Publish}\app\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#Publish}\demo\*.dndx"; DestDir: "{commondocs}\DND Electrical\Demo projects"; Tasks: demos; Flags: ignoreversion
+Source: "..\documentation\Manual\DND-Engineering-Suite-User-Manual-*.pdf"; DestDir: "{app}\Manual"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\Demo projects"; Filename: "{commondocs}\DND Electrical\Demo projects"; Tasks: demos
+Name: "{group}\User Manual (English)"; Filename: "{app}\Manual\DND-Engineering-Suite-User-Manual-EN.pdf"
+Name: "{group}\Manuel utilisateur (français)"; Filename: "{app}\Manual\DND-Engineering-Suite-User-Manual-FR.pdf"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Registry]

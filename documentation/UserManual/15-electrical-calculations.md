@@ -16,6 +16,10 @@ Calculation ▸ Calculations opens the calculation workspace. Available calculat
 - Transformer sizing, motor starting current and voltage dip
 - Circuit-breaker selection, TN fault-loop maximum length
 - Load schedule and phase load balancing
+- Power factor correction with resonance check, generator sizing, earth rod and earthing grid resistance, tolerable touch/step voltages (POWER)
+- Lighting (lumen method), UPS redundancy and autonomy, PUE, PV string sizing
+
+Network studies (load flow, IEC 60909 short circuit, protection coordination, harmonics) are in **Engineering ▸ PowerStudio**.
 
 Every result lists inputs, formula, calculation steps, results with units, checks, assumptions, warnings, the standard profile and a status (Pass, Warning, Fail, Informational). Results can be stored in the project and printed in the calculation report.
 

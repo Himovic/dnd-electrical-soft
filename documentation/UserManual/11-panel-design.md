@@ -18,4 +18,4 @@ The cabinet layout is a 2D front view of the mounting plate.
 
 The layout check reports items outside the mounting plate, collisions, clearance violations and devices placed twice. Utilisation and free rail length are shown in the cabinet report.
 
-Cabinet items are linked to schematic devices: renaming a device updates the layout. 3D visualisation is planned.
+Cabinet items are linked to schematic devices: renaming a device updates the layout. **Engineering ▸ 3D layout ▸ Generate 3D from 2D layout** builds the 3D cabinet with the same identities (clash checks, sections, glTF/STL and IFC export).

@@ -42,7 +42,8 @@ Exact status of every feature — *implemented and tested*, *not fully validated
 | [ENGINEERING_VALIDATION.md](ENGINEERING_VALIDATION.md) | References, benchmarks and tolerances of every calculation and study |
 | [ROADMAP.md](ROADMAP.md) | Planned work |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [documentation/](documentation) | User manual (in-app help), developer guide, installation |
+| [User manual – English (PDF)](documentation/Manual/DND-Engineering-Suite-User-Manual-EN.pdf) · [Manuel utilisateur – français (PDF)](documentation/Manual/DND-Engineering-Suite-User-Manual-FR.pdf) | Complete manuals from installation to every module; rebuild with `python3 scripts/build-manual.py` |
+| [documentation/](documentation) | In-app help articles, developer guide, installation |
 
 ## Demonstration projects
 

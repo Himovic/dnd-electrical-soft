@@ -26,7 +26,7 @@ The command-line tool `dnd-electrical` also runs on Linux and macOS.
 
 ## Activation
 
-This build does not contain a licence-activation mechanism. Commercial licensing will be added in a later release; until then all features are available.
+Open **Help ▸ Licensing**: install the evaluation licence, activate online with your licence key, or import a licence file (offline activation). Modules that are not licensed show an upgrade page; without ELEC, projects open read-only. Project data is never deleted when a licence expires. See the PDF user manual, chapter *Licensing and activation*.
 
 ## Data locations
 
