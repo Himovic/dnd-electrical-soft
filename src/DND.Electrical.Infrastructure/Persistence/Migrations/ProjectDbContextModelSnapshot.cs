@@ -17,6 +17,62 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("DND.Electrical.Domain.AiInteractionRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AnswerExcerpt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("At")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Decisions")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ProjectDataShared")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Proposals")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("User")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("AiInteractions", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.AlarmDefinition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2103,6 +2159,14 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("Connections", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.AiInteractionRecord", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("AiInteractions")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.AlarmDefinition", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
@@ -2570,6 +2634,8 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DND.Electrical.Domain.ElectricalProject", b =>
                 {
+                    b.Navigation("AiInteractions");
+
                     b.Navigation("Alarms");
 
                     b.Navigation("Approvals");

@@ -107,8 +107,15 @@ public partial class App : System.Windows.Application
         s.AddSingleton<TutorialEngine>();
         s.AddSingleton(sp => new PluginManager(paths.Plugins, () => sp.GetRequiredService<ProjectService>().Current?.Project, m => Log.Information(m)));
         s.AddSingleton(sp => new PermissionService(Enum.TryParse<UserRole>(sp.GetRequiredService<UserSettings>().Role, out var r) ? r : UserRole.Engineer));
-        s.AddSingleton<IAssistantProvider>(sp => new LocalAssistantProvider(sp.GetRequiredService<SymbolLibraryService>(), sp.GetRequiredService<HelpLibrary>(),
-            p => sp.GetRequiredService<SchematicBinder>().BindWithConnectivity(p)));
+        s.AddSingleton<IAssistantProvider>(sp =>
+        {
+            var settings = sp.GetRequiredService<UserSettings>();
+            var secrets = sp.GetRequiredService<ISecretStore>();
+            Func<DND.Electrical.Domain.ElectricalProject, DND.Electrical.Schematic.Connectivity.ConnectivityGraph> graph = p => sp.GetRequiredService<SchematicBinder>().BindWithConnectivity(p);
+            var local = new LocalAssistantProvider(sp.GetRequiredService<SymbolLibraryService>(), sp.GetRequiredService<HelpLibrary>(), graph);
+            var claude = new ClaudeAssistantProvider(() => secrets.Get(ClaudeAssistantProvider.SecretName), () => settings, graph) { KeyStore = secrets };
+            return new AssistantRouter(local, claude, () => settings);
+        });
         s.AddSingleton(_ => new DND.Electrical.Licensing.LicenseManager(new DND.Electrical.Licensing.LicenseStore(paths.Licensing), DND.Electrical.Licensing.TrustedKeys.Product()));
         s.AddSingleton<DND.Electrical.Licensing.IEntitlements>(sp => sp.GetRequiredService<DND.Electrical.Licensing.LicenseManager>());
         s.AddSingleton<AppEventBus>();

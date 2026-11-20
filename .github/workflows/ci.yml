@@ -34,6 +34,11 @@ jobs:
           python3 scripts/verify-3d.py out/cab.glb out/cab.stl --expect-extents-mm 800,300,1200
           mkdir -p out/validator && cd out/validator && npm init -y > /dev/null && npm install gltf-validator > /dev/null
           node ../../scripts/verify-gltf.mjs ../cab.glb
+      - name: Verify IFC export (IfcOpenShell)
+        run: |
+          pip install ifcopenshell
+          dotnet run --project src/DND.Electrical.Cli -c Release -- model3d out/demo/DEMO-CAB-004.dndx --ifc out/cab.ifc
+          python3 scripts/verify-ifc.py out/cab.ifc
 
   windows-app:
     runs-on: windows-latest

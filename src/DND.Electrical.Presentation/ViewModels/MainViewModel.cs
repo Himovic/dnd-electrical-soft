@@ -1067,7 +1067,17 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenAssistant()
     {
-        if (Require(DND.Electrical.Licensing.EngineeringModule.AI)) _s.Dialogs.Show(new AssistantViewModel(_s.Assistant, () => Session?.Project, ApplyFix));
+        if (Require(DND.Electrical.Licensing.EngineeringModule.AI))
+            _s.Dialogs.Show(new AssistantViewModel(_s.Assistant, () => Session?.Project, ApplyFix, _s.Settings.UserName, () => Session?.MarkDirty(), OpenAssistantSettings));
+    }
+
+    private object? OpenAssistantSettings()
+    {
+        var vm = new AssistantSettingsViewModel(_s.Settings, (_s.Assistant as AssistantRouter)?.Claude.KeyStore);
+        if (_s.Dialogs.ShowDialog(vm) != true) return null;
+        vm.Apply();
+        SaveSettings();
+        return vm;
     }
 
     [RelayCommand]

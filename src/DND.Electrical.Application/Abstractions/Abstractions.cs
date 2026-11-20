@@ -67,6 +67,10 @@ public sealed class UserSettings
     public string UserName { get; set; } = Environment.UserName;
     public string Role { get; set; } = "Administrator";
     public string AssistantProvider { get; set; } = "local";
+    /// <summary>Claude model used when <see cref="AssistantProvider"/> is "claude".</summary>
+    public string AssistantModel { get; set; } = "claude-opus-5-5";
+    /// <summary>Allow sending a project summary (tags, counts, validation findings) to the external AI provider. Off by default.</summary>
+    public bool AssistantShareProjectData { get; set; }
     public string LicenseServerUrl { get; set; } = "https://licensing.dnd-engineering.example/";
     public bool FirstRun { get; set; } = true;
 

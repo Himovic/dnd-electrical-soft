@@ -34,10 +34,11 @@ public sealed partial class ThreeDViewModel : ObservableObject
     private readonly IDialogService _dialogs;
     private readonly Action _changed;
     private readonly Action<Guid> _showInSchematic;
+    private readonly BimService _bim;
 
     public ThreeDViewModel(ElectricalProject project, IEntitlements entitlements, IDialogService dialogs, Action changed, Action<Guid> showInSchematic, Guid? focusObjectId = null)
     {
-        _p = project; _svc = new ThreeDService(entitlements); _dialogs = dialogs; _changed = changed; _showInSchematic = showInSchematic;
+        _p = project; _svc = new ThreeDService(entitlements); _bim = new BimService(entitlements); _dialogs = dialogs; _changed = changed; _showInSchematic = showInSchematic;
         ReloadLayouts();
         if (focusObjectId is { } id)
         {
@@ -314,6 +315,39 @@ public sealed partial class ThreeDViewModel : ObservableObject
     {
         if (SelectedObject?.Object.ObjectId is { } id) _showInSchematic(id);
         else _dialogs.ShowError(Title, "The selected 3D object is not linked to an engineering object.");
+    }
+
+    [RelayCommand]
+    private void ExportIfc()
+    {
+        if (Scene is null) return;
+        var path = _dialogs.SaveFile("Export IFC", "IFC4 (*.ifc)|*.ifc", $"{_p.Info.Number}-{Scene.Name}.ifc");
+        if (path is null) return;
+        try
+        {
+            _bim.ExportIfc(_p, Scene, path);
+            _dialogs.ShowInfo(Title, $"IFC4 file written: {path}. Engineering identities are in the property set {DND.Electrical.Bim.IfcExchange.PsetName}.");
+        }
+        catch (LicenseException ex) { _dialogs.ShowError(Title, ex.Message); }
+    }
+
+    [RelayCommand]
+    private void ImportIfc()
+    {
+        var path = _dialogs.OpenFile("Import IFC", "IFC (*.ifc)|*.ifc");
+        if (path is null) return;
+        try
+        {
+            var (doc, result) = _bim.ImportIfc(_p, path);
+            _changed();
+            ReloadLayouts();
+            SelectedLayout = doc;
+            Findings.Clear();
+            Findings.Add($"Imported {result.Imported} object(s) from {Path.GetFileName(path)}; {result.Skipped} skipped.");
+            foreach (var n in result.Notes) Findings.Add(n);
+        }
+        catch (LicenseException ex) { _dialogs.ShowError(Title, ex.Message); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or FormatException) { _dialogs.ShowError(Title, $"IFC import failed: {ex.Message}"); }
     }
 
     [RelayCommand]

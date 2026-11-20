@@ -10,6 +10,8 @@ namespace DND.Electrical.Application.Services;
 /// </summary>
 public sealed class ThreeDService(IEntitlements entitlements)
 {
+    public IEntitlements Entitlements => entitlements;
+
     public static Scene3D Load(Layout3DDocument doc)
     {
         var s = Scene3D.FromJson(doc.SceneJson);

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DND.Electrical.Bim</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DND.Electrical.ThreeD/DND.Electrical.ThreeD.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xbim.Essentials" />
+  </ItemGroup>
+</Project>

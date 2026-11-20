@@ -8,6 +8,8 @@
     <PackageVersion Include="SkiaSharp.Views.WPF" Version="3.119.4" />
     <PackageVersion Include="HelixToolkit.Wpf" Version="3.1.2" />
     <PackageVersion Include="MQTTnet" Version="5.2.0.1603" />
+    <PackageVersion Include="Xbim.Essentials" Version="6.1.605" />
+    <PackageVersion Include="Anthropic" Version="13.11.0" />
     <PackageVersion Include="MQTTnet.Server" Version="5.2.0.1603" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.15" />

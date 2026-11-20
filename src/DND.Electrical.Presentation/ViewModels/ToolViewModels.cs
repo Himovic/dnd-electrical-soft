@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DND.Electrical.Application.Abstractions;
 using DND.Electrical.Application.Services;
 using DND.Electrical.CAD.Editing;
 using DND.Electrical.CAD.Entities;
@@ -483,9 +484,11 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
 
 public sealed record ChatMessage(string Role, string Text);
 
-public sealed partial class AssistantViewModel(IAssistantProvider provider, Func<ElectricalProject?> project, Action<string?> applyFix) : ObservableObject
+public sealed partial class AssistantViewModel(IAssistantProvider provider, Func<ElectricalProject?> project, Action<string?> applyFix, string user = "", Action? changed = null, Func<object?>? openSettings = null) : ObservableObject
 {
+    private AiInteractionRecord? _last;
     public string Title => $"Engineering assistant – {provider.Name}";
+    public string ProviderName => provider.Name;
     public ObservableCollection<ChatMessage> Conversation { get; } = new()
     {
         new ChatMessage("Assistant", "Ask about symbols, calculations, connections, or ask me to check the project for errors. I never change drawings without your confirmation."),
@@ -505,6 +508,7 @@ public sealed partial class AssistantViewModel(IAssistantProvider provider, Func
         try
         {
             var a = await provider.AskAsync(q, project());
+            if (project() is { } p) { _last = AiAudit.Record(p, provider, q, a, user); changed?.Invoke(); }
             Conversation.Add(new ChatMessage("Assistant", a.Text + (a.Sources.Count > 0 ? $"\n\nSources: {string.Join("; ", a.Sources)}" : "")));
             Suggestions.Clear();
             foreach (var s in a.Suggestions) Suggestions.Add(s);
@@ -512,8 +516,75 @@ public sealed partial class AssistantViewModel(IAssistantProvider provider, Func
         finally { Busy = false; }
     }
 
+    /// <summary>Accepting a proposal records the decision; executable proposals still ask for confirmation before running.</summary>
     [RelayCommand]
-    private void Apply(AssistantSuggestion? s) => applyFix(s?.FixId);
+    private void Apply(AssistantSuggestion? s)
+    {
+        if (s is null) return;
+        if (_last is not null && project() is { } p) { AiAudit.Decide(p, _last, s, true, user); changed?.Invoke(); }
+        Suggestions.Remove(s);
+        applyFix(s.FixId);
+    }
+
+    [RelayCommand]
+    private void Reject(AssistantSuggestion? s)
+    {
+        if (s is null) return;
+        if (_last is not null && project() is { } p) { AiAudit.Decide(p, _last, s, false, user); changed?.Invoke(); }
+        Suggestions.Remove(s);
+    }
+
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        openSettings?.Invoke();
+        OnPropertyChanged(nameof(Title)); OnPropertyChanged(nameof(ProviderName));
+    }
+}
+
+/// <summary>Assistant provider configuration: local knowledge or Claude (model, opt-in project data sharing, API key in encrypted storage).</summary>
+public sealed partial class AssistantSettingsViewModel : DialogViewModel
+{
+    private readonly UserSettings _settings;
+    private readonly ISecretStore? _store;
+
+    public AssistantSettingsViewModel(UserSettings settings, ISecretStore? store)
+    {
+        _settings = settings; _store = store;
+        _provider = settings.AssistantProvider; _model = settings.AssistantModel; _share = settings.AssistantShareProjectData;
+    }
+
+    public override string Title => "Assistant settings";
+    public IReadOnlyList<string> Providers { get; } = new[] { "local", "claude" };
+    [ObservableProperty] private string _provider;
+    [ObservableProperty] private string _model;
+    [ObservableProperty] private bool _share;
+    [ObservableProperty] private string _apiKey = string.Empty;
+    public string KeyStatus => _store is not { IsSupported: true } ? "Secure key storage is not available on this operating system – the key cannot be saved."
+        : _store.Get(ClaudeAssistantProvider.SecretName) is { Length: > 0 } ? "An API key is stored (encrypted for the current Windows user)." : "No API key stored.";
+    public string Privacy => "With data sharing off, only your question is sent. With it on, a project summary (device tags and functions, counts, validation findings – no customer details) is added. Every interaction and decision is recorded in the project's AI audit trail.";
+
+    protected override string? Validate()
+    {
+        if (Provider == "claude" && string.IsNullOrWhiteSpace(Model)) return "Enter a Claude model id (e.g. claude-opus-5-5).";
+        if (ApiKey.Length > 0 && _store is not { IsSupported: true }) return "The API key cannot be stored securely on this operating system.";
+        return null;
+    }
+
+    public void Apply()
+    {
+        _settings.AssistantProvider = Provider; _settings.AssistantModel = Model.Trim(); _settings.AssistantShareProjectData = Share;
+        if (ApiKey.Length > 0) _store!.Set(ClaudeAssistantProvider.SecretName, ApiKey.Trim());
+        ApiKey = string.Empty;
+        OnPropertyChanged(nameof(KeyStatus));
+    }
+
+    [RelayCommand]
+    private void ClearKey()
+    {
+        if (_store is { IsSupported: true }) _store.Set(ClaudeAssistantProvider.SecretName, null);
+        OnPropertyChanged(nameof(KeyStatus));
+    }
 }
 
 // ====================================================================== Symbol editor

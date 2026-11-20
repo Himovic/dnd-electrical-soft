@@ -54,6 +54,7 @@ public sealed class ElectricalProject
     public List<CauseEffectMatrix> CauseEffects { get; set; } = new();
     public List<ScadaNode> ScadaNodes { get; set; } = new();
     public List<TwinPoint> TwinPoints { get; set; } = new();
+    public List<AiInteractionRecord> AiInteractions { get; set; } = new();
 
     // ------------------------------------------------------------------ lookups
 

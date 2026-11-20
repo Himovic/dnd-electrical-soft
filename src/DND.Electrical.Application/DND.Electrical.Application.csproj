@@ -12,9 +12,11 @@
     <ProjectReference Include="../DND.Electrical.ThreeD/DND.Electrical.ThreeD.csproj" />
     <ProjectReference Include="../DND.Electrical.Power/DND.Electrical.Power.csproj" />
     <ProjectReference Include="../DND.Electrical.Twin/DND.Electrical.Twin.csproj" />
+    <ProjectReference Include="../DND.Electrical.Bim/DND.Electrical.Bim.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Anthropic" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="DND.Electrical.UnitTests" />

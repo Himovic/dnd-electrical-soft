@@ -650,3 +650,65 @@ public class TwinWorkflowTests
         Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "TWIN");
     }
 }
+
+public class AssistantAuditWorkflowTests
+{
+    private sealed class MemorySecrets : DND.Electrical.Application.Abstractions.ISecretStore
+    {
+        private readonly Dictionary<string, string> _d = new();
+        public bool IsSupported => true;
+        public void Set(string name, string? value) { if (value is null) _d.Remove(name); else _d[name] = value; }
+        public string? Get(string name) => _d.GetValueOrDefault(name);
+    }
+
+    [Fact]
+    public async Task Assistant_interactions_and_decisions_are_audited_in_the_project()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-IND-001");
+        var p = h.Main.Session!.Project;
+        // Create an issue the local assistant proposes to fix.
+        foreach (var w in p.Sheets.SelectMany(s => s.Drawing.Entities.OfType<DND.Electrical.Schematic.Entities.WireEntity>()).Take(2)) w.WireNumber = string.Empty;
+        h.Main.OpenAssistantCommand.Execute(null);
+        var vm = Assert.IsType<AssistantViewModel>(h.Dialogs.Shown.Last());
+        vm.Question = "Check the project for errors";
+        await vm.AskCommand.ExecuteAsync(null);
+        var rec = Assert.Single(p.AiInteractions);
+        Assert.Equal("local", rec.Model);
+        Assert.False(rec.ProjectDataShared);
+        Assert.NotEmpty(vm.Suggestions);
+        var s = vm.Suggestions.First();
+        h.Dialogs.ConfirmAnswer = false; // accept the proposal but decline the final confirmation: nothing runs
+        vm.ApplyCommand.Execute(s);
+        Assert.Contains("→ Accepted", rec.Decisions);
+        Assert.DoesNotContain(s, vm.Suggestions);
+        if (vm.Suggestions.FirstOrDefault() is { } other)
+        {
+            vm.RejectCommand.Execute(other);
+            Assert.Contains("→ Rejected", rec.Decisions);
+        }
+    }
+
+    [Fact]
+    public void Assistant_settings_store_the_key_only_in_secure_storage()
+    {
+        var settings = new DND.Electrical.Application.Abstractions.UserSettings();
+        var secrets = new MemorySecrets();
+        var vm = new AssistantSettingsViewModel(settings, secrets) { Provider = "claude", Share = true, ApiKey = "sk-test" };
+        vm.OkCommand.Execute(null);
+        Assert.True(vm.DialogResult);
+        vm.Apply();
+        Assert.Equal("claude", settings.AssistantProvider);
+        Assert.True(settings.AssistantShareProjectData);
+        Assert.Equal("sk-test", secrets.Get(DND.Electrical.Application.Services.ClaudeAssistantProvider.SecretName));
+        Assert.DoesNotContain("sk-test", System.Text.Json.JsonSerializer.Serialize(settings));
+        Assert.Empty(vm.ApiKey);
+        vm.ClearKeyCommand.Execute(null);
+        Assert.Null(secrets.Get(DND.Electrical.Application.Services.ClaudeAssistantProvider.SecretName));
+
+        var unsupported = new AssistantSettingsViewModel(settings, null) { ApiKey = "sk-x" };
+        unsupported.OkCommand.Execute(null);
+        Assert.NotEqual(true, unsupported.DialogResult);
+        Assert.Contains("cannot be stored securely", unsupported.Error);
+    }
+}

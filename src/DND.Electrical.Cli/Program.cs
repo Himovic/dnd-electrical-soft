@@ -262,6 +262,11 @@ public static class Program
         var clashes = svc.Clashes(p, scene);
         foreach (var c in clashes) Console.WriteLine($"{c.Kind,-9} {c.Description}");
         Console.WriteLine($"{clashes.Count(c => c.Kind == DND.Electrical.ThreeD.ClashKind.Hard)} hard clash(es), {clashes.Count(c => c.Kind == DND.Electrical.ThreeD.ClashKind.Clearance)} clearance violation(s).");
+        if (Opt(args, "--ifc") is { } ifc)
+        {
+            new BimService(svc.Entitlements).ExportIfc(p, scene, ifc);
+            Console.WriteLine($"IFC4 written: {ifc} ({new FileInfo(ifc).Length:N0} B)");
+        }
         if (Opt(args, "--out") is { } output)
         {
             svc.Export(scene, output);
@@ -320,7 +325,7 @@ public static class Program
               dnd-electrical archive <project.dndx> <package.dndpkg>
               dnd-electrical import <package.dndpkg> <project.dndx>
               dnd-electrical power <network.json|project.dndx|sample:ieee14|sample:demo> [--study lf|sc|prot|harm|all] [--out <report.txt>] [--tcc <chart.svg>]
-              dnd-electrical model3d <project.dndx> [--cabinet <tag>] [--out <file.glb|.gltf|.stl>] [--save]
+              dnd-electrical model3d <project.dndx> [--cabinet <tag>] [--out <file.glb|.gltf|.stl>] [--ifc <file.ifc>] [--save]
               dnd-electrical symbols [--search <text>] | symbols export <file.json>
               dnd-electrical calc current|power|voltage-drop|cable|short-circuit|transformer|motor [options]
               dnd-electrical license status|evaluation|install <file.dndlic>|request <licenceId> [file]|remove

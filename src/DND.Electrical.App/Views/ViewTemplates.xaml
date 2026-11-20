@@ -686,6 +686,8 @@
                 <Button Content="GLB" Command="{Binding ExportCommand}" CommandParameter="glb" Style="{StaticResource FlatButton}"/>
                 <Button Content="glTF" Command="{Binding ExportCommand}" CommandParameter="gltf" Style="{StaticResource FlatButton}"/>
                 <Button Content="STL" Command="{Binding ExportCommand}" CommandParameter="stl" Style="{StaticResource FlatButton}"/>
+                <Button Content="IFC…" Command="{Binding ExportIfcCommand}" Style="{StaticResource FlatButton}" ToolTip="IFC4 export (BIM module)"/>
+                <Button Content="Import IFC…" Command="{Binding ImportIfcCommand}" Style="{StaticResource FlatButton}" ToolTip="Import building/plant context from IFC (BIM module)"/>
             </WrapPanel>
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="380"/></Grid.ColumnDefinitions>
@@ -799,6 +801,10 @@
     <!-- ============================== Assistant ============================== -->
     <DataTemplate DataType="{x:Type vm:AssistantViewModel}">
         <DockPanel Margin="10">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                <Button DockPanel.Dock="Right" Content="Assistant settings…" Command="{Binding OpenSettingsCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock VerticalAlignment="Center" Style="{StaticResource Subtle}"><Run Text="Provider: "/><Run Text="{Binding ProviderName, Mode=OneWay}"/><Run Text=" · proposals run only after your confirmation and every decision is audited"/></TextBlock>
+            </DockPanel>
             <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
                 <Button DockPanel.Dock="Right" Content="Ask" Command="{Binding AskCommand}" IsDefault="True" Style="{StaticResource AccentButton}"/>
                 <TextBox Text="{Binding Question, UpdateSourceTrigger=PropertyChanged}"/>
@@ -806,9 +812,12 @@
             <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Suggestions}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Button Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Command="{Binding DataContext.ApplyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
-                            <TextBlock><Run Text="Apply (with confirmation): "/><Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
-                        </Button>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource FlatButton}" HorizontalAlignment="Left" Command="{Binding DataContext.ApplyCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="{Binding Detail}">
+                                <TextBlock><Run Text="Accept: "/><Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/></TextBlock>
+                            </Button>
+                            <Button Content="Reject" Style="{StaticResource FlatButton}" Command="{Binding DataContext.RejectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -824,6 +833,25 @@
                 </ItemsControl>
             </ScrollViewer>
         </DockPanel>
+    </DataTemplate>
+
+    <!-- ============================== Assistant settings ============================== -->
+    <DataTemplate DataType="{x:Type vm:AssistantSettingsViewModel}">
+        <StackPanel Width="520">
+            <TextBlock Text="Provider" Style="{StaticResource FormLabel}"/>
+            <ComboBox ItemsSource="{Binding Providers}" SelectedItem="{Binding Provider}"/>
+            <TextBlock Text="Claude model" Style="{StaticResource FormLabel}"/>
+            <TextBox Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}"/>
+            <CheckBox Content="Share a project summary with the AI provider" IsChecked="{Binding Share}" Margin="0,10,0,0"/>
+            <TextBlock Text="{Binding Privacy}" TextWrapping="Wrap" Style="{StaticResource Subtle}" Margin="0,4,0,0"/>
+            <TextBlock Text="API key (leave empty to keep the stored key)" Style="{StaticResource FormLabel}"/>
+            <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"/>
+            <DockPanel Margin="0,4,0,0">
+                <Button DockPanel.Dock="Right" Content="Remove stored key" Command="{Binding ClearKeyCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock Text="{Binding KeyStatus}" TextWrapping="Wrap" Style="{StaticResource Subtle}" VerticalAlignment="Center"/>
+            </DockPanel>
+            <ContentControl ContentTemplate="{StaticResource DialogButtons}" Content="{Binding}"/>
+        </StackPanel>
     </DataTemplate>
 
     <!-- ============================== Symbol editor ============================== -->

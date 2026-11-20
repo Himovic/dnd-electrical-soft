@@ -149,3 +149,23 @@ public sealed class PowerNetworkDocument
     public string NetworkJson { get; set; } = "{}";
     public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
 }
+
+/// <summary>
+/// Audit record of an AI assistant interaction: provider, model, whether project data was shared, the proposals
+/// returned and the user's decision on each. The project context sent to an external provider is not stored.
+/// </summary>
+public sealed class AiInteractionRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public DateTimeOffset At { get; set; } = DateTimeOffset.Now;
+    public string User { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
+    public string Model { get; set; } = string.Empty;
+    public bool ProjectDataShared { get; set; }
+    public string Question { get; set; } = string.Empty;
+    public string AnswerExcerpt { get; set; } = string.Empty;
+    /// <summary>Proposal titles, one per line.</summary>
+    public string Proposals { get; set; } = string.Empty;
+    /// <summary>Decisions as "title → Accepted|Rejected", one per line.</summary>
+    public string Decisions { get; set; } = string.Empty;
+}
