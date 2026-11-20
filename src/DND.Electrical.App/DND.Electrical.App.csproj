@@ -27,5 +27,6 @@
     <Resource Include="../../resources/Icons/dnd-logo-256.png" Link="Assets/dnd-logo-256.png" />
     <Resource Include="../../resources/Icons/dnd-app.ico" Link="Assets/dnd-app.ico" />
     <Content Include="../../documentation/UserManual/**/*" LinkBase="Documentation" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../resources/Licensing/evaluation.dndlic" Link="Licensing/evaluation.dndlic" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

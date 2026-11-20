@@ -9,6 +9,9 @@
     <ProjectReference Include="../DND.Electrical.Infrastructure/DND.Electrical.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="../../resources/Licensing/evaluation.dndlic" Link="Licensing/evaluation.dndlic" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
   </ItemGroup>

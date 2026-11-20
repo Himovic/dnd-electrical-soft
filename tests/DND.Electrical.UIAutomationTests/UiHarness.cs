@@ -54,15 +54,17 @@ public sealed class UiHarness : IDisposable
         var settings = settingsStore.Load();
         var help = new HelpLibrary(Path.Combine(RepoRoot(), "documentation", "UserManual"), paths.Documentation);
         Dialogs = new FakeDialogs();
-        Services = new AppServices(projects, store, schematic, library, new DemoProjectFactory(schematic), new DocumentationService(schematic),
+        Licensing = DND.Electrical.TestSupport.TestLicensing.Create(paths.Licensing);
+        Services = new AppServices(projects, store, schematic, library, new DemoProjectFactory(schematic), new DocumentationService(schematic, Licensing),
             settingsStore, settings, help, new TutorialEngine(), new PluginManager(paths.Plugins, () => projects.Current?.Project),
             paths, new PermissionService(UserRole.Administrator), new LocalAssistantProvider(library, help, p => schematic.Binder.BindWithConnectivity(p)),
-            new AppEventBus(), Dialogs);
+            new AppEventBus(), Dialogs, Licensing);
         Main = new MainViewModel(Services);
     }
 
     public string Folder { get; }
     public FakeDialogs Dialogs { get; }
+    public DND.Electrical.Licensing.LicenseManager Licensing { get; }
     public AppServices Services { get; }
     public MainViewModel Main { get; }
     public string PathFor(string name) => Path.Combine(Folder, name);

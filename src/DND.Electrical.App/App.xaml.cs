@@ -70,6 +70,7 @@ public partial class App : System.Windows.Application
             _autosave.Tick += async (_, _) => await vm.AutosaveAsync();
             _autosave.Start();
             Log.Information("{Product} started", ProductInfo.FullTitle);
+            vm.CheckLicenseOnStartup();
             if (e.Args.Length > 0 && File.Exists(e.Args[0])) await vm.OpenPathAsync(e.Args[0]);
         }
         catch (Exception ex)
@@ -108,6 +109,8 @@ public partial class App : System.Windows.Application
         s.AddSingleton(sp => new PermissionService(Enum.TryParse<UserRole>(sp.GetRequiredService<UserSettings>().Role, out var r) ? r : UserRole.Engineer));
         s.AddSingleton<IAssistantProvider>(sp => new LocalAssistantProvider(sp.GetRequiredService<SymbolLibraryService>(), sp.GetRequiredService<HelpLibrary>(),
             p => sp.GetRequiredService<SchematicBinder>().BindWithConnectivity(p)));
+        s.AddSingleton(_ => new DND.Electrical.Licensing.LicenseManager(new DND.Electrical.Licensing.LicenseStore(paths.Licensing), DND.Electrical.Licensing.TrustedKeys.Product()));
+        s.AddSingleton<DND.Electrical.Licensing.IEntitlements>(sp => sp.GetRequiredService<DND.Electrical.Licensing.LicenseManager>());
         s.AddSingleton<AppEventBus>();
         s.AddSingleton<IDialogService, WpfDialogService>();
         s.AddSingleton<AppServices>();

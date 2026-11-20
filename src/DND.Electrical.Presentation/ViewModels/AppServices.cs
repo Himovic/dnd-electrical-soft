@@ -28,4 +28,5 @@ public sealed record AppServices(
     PermissionService Permissions,
     IAssistantProvider Assistant,
     AppEventBus Events,
-    IDialogService Dialogs);
+    IDialogService Dialogs,
+    DND.Electrical.Licensing.LicenseManager Licensing);

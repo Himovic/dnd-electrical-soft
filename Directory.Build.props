@@ -7,10 +7,10 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <Company>D&amp;D | Data&amp;Development</Company>
     <Authors>D&amp;D | Data&amp;Development</Authors>
-    <Product>D&amp;D Electrical Engineering Suite</Product>
+    <Product>D&amp;D Electrical &amp; Automation Engineering Suite</Product>
     <Copyright>© 2026 D&amp;D | Data&amp;Development. All rights reserved.</Copyright>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>

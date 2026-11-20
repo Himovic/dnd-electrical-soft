@@ -19,8 +19,10 @@ public sealed record ExportResult(string Path, string Kind, long Size);
 /// Generates engineering documentation from live project data: drawing sets, reports (PDF/XLSX/CSV),
 /// drawing exchange files (DXF/SVG/PNG) and complete handover packages.
 /// </summary>
-public sealed class DocumentationService(SchematicService schematic)
+public sealed class DocumentationService(SchematicService schematic, DND.Electrical.Licensing.IEntitlements entitlements)
 {
+    private void Demand() => entitlements.Demand(DND.Electrical.Licensing.EngineeringModule.DOCS);
+
     private ConnectivityGraph Prepare(ElectricalProject project) => schematic.Binder.BindWithConnectivity(project);
 
     private static IImageProvider Images(ElectricalProject project, ReportOptions? options)
@@ -33,6 +35,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult DrawingSetPdf(ElectricalProject project, string path, ReportOptions? options = null, IEnumerable<Sheet>? sheets = null)
     {
+        Demand();
         options ??= new ReportOptions();
         Prepare(project);
         var composer = new PdfDocumentComposer(project, options, Images(project, options));
@@ -45,6 +48,7 @@ public sealed class DocumentationService(SchematicService schematic)
     /// <summary>One PDF containing the selected reports (all when <paramref name="reportIds"/> is empty).</summary>
     public ExportResult ReportsPdf(ElectricalProject project, string path, IEnumerable<string>? reportIds = null, ReportOptions? options = null)
     {
+        Demand();
         options ??= new ReportOptions();
         var graph = Prepare(project);
         var reports = new ProjectReports(project, graph, options);
@@ -68,6 +72,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult ReportsXlsx(ElectricalProject project, string path, IEnumerable<string>? reportIds = null, ReportOptions? options = null)
     {
+        Demand();
         options ??= new ReportOptions();
         var graph = Prepare(project);
         var reports = new ProjectReports(project, graph, options);
@@ -79,6 +84,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult ReportCsv(ElectricalProject project, string reportId, string path, ReportOptions? options = null)
     {
+        Demand();
         var graph = Prepare(project);
         CsvWriter.Write(new ProjectReports(project, graph, options).Build(reportId), path);
         return Result(path, "csv");
@@ -86,6 +92,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult SheetDxf(ElectricalProject project, Sheet sheet, string path)
     {
+        Demand();
         Prepare(project);
         File.WriteAllText(path, DxfWriter.Write(sheet.Drawing, FieldResolver.CreateResolver(project, sheet)));
         return Result(path, "dxf");
@@ -93,6 +100,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult SheetSvg(ElectricalProject project, Sheet sheet, string path)
     {
+        Demand();
         Prepare(project);
         using (var fs = File.Create(path))
             DrawingExporter.ToSvg(sheet.Drawing, new Rect2(0, 0, sheet.Width, sheet.Height), fs, FieldResolver.CreateResolver(project, sheet), Images(project, null));
@@ -101,6 +109,7 @@ public sealed class DocumentationService(SchematicService schematic)
 
     public ExportResult SheetPng(ElectricalProject project, Sheet sheet, string path, double pixelsPerMm = 6)
     {
+        Demand();
         Prepare(project);
         File.WriteAllBytes(path, DrawingExporter.ToPng(sheet.Drawing, new Rect2(0, 0, sheet.Width, sheet.Height), pixelsPerMm, FieldResolver.CreateResolver(project, sheet), Images(project, null)));
         return Result(path, "png");
@@ -112,6 +121,7 @@ public sealed class DocumentationService(SchematicService schematic)
     /// </summary>
     public IReadOnlyList<ExportResult> HandoverPackage(ElectricalProject project, string folder, ReportOptions? options = null, bool zip = true)
     {
+        Demand();
         options ??= new ReportOptions();
         Directory.CreateDirectory(folder);
         var baseName = Safe($"{project.Info.Number}_{project.Info.CurrentRevision}");

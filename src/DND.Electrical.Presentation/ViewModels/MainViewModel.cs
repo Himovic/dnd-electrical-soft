@@ -77,6 +77,43 @@ public sealed partial class MainViewModel : ObservableObject
     public string TutorialTitle => _s.Tutorials.Active?.Title ?? string.Empty;
     public CadEditor? Editor => ActiveDocument?.Editor;
 
+    /// <summary>
+    /// Feature gate: shows the upgrade/activation page when the module is not licensed. Services enforce the
+    /// same entitlements again at execution time (defence in depth).
+    /// </summary>
+    public bool Require(DND.Electrical.Licensing.EngineeringModule module)
+    {
+        if (_s.Licensing.IsEnabled(module)) return true;
+        _s.Dialogs.ShowDialog(new ModuleLockedViewModel(module, _s.Licensing.Current, () => OpenLicensing()));
+        return false;
+    }
+
+    [RelayCommand]
+    public void OpenLicensing() => _s.Dialogs.Show(new LicensingViewModel(_s.Licensing, _s.Settings, _s.Dialogs, () => { SaveSettings(); OnLicenseChanged(); }, _s.Paths));
+
+    public string LicenseStatusText => $"{_s.Licensing.Current.State} · {_s.Licensing.LicensedModules.Count} module(s)";
+
+    private void OnLicenseChanged()
+    {
+        OnPropertyChanged(nameof(LicenseStatusText));
+        foreach (var d in Documents) ApplyLicenseToEditor(d.Editor);
+        Log("Licence: " + _s.Licensing.Current.Message);
+    }
+
+    private void ApplyLicenseToEditor(CadEditor editor)
+    {
+        editor.IsReadOnly = !_s.Licensing.IsEnabled(DND.Electrical.Licensing.EngineeringModule.ELEC);
+        editor.ReadOnlyReason = "Read-only: the Electrical Engineering (ELEC) module is not licensed. " + _s.Licensing.Current.Message;
+        if (editor.IsReadOnly && editor.ActiveTool is not SelectTool) editor.SetTool(new SelectTool());
+    }
+
+    /// <summary>Called once after startup: proposes activation when no usable licence is installed.</summary>
+    public void CheckLicenseOnStartup()
+    {
+        Log("Licence: " + _s.Licensing.Current.Message);
+        if (!_s.Licensing.Current.AllowsFeatures) OpenLicensing();
+    }
+
     public void Log(string message)
     {
         Output.Add($"{DateTime.Now:HH:mm:ss}  {message}");
@@ -378,6 +415,7 @@ public sealed partial class MainViewModel : ObservableObject
         editor.EntityActivated += (_, e) => { UpdateProperties(); _s.Dialogs.Show(new EntityActivatedHint(e)); };
         editor.ToolChanged += (_, _) => CommandLine.Prompt = editor.Prompt;
         editor.StatusMessage += (_, m) => Log(m);
+        ApplyLicenseToEditor(editor);
         var doc = new SheetEditorViewModel(sheet, editor);
         Documents.Add(doc);
         ActiveDocument = doc;
@@ -398,6 +436,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void NewSheet()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         var p = Session!.Project;
         var title = _s.Dialogs.PromptText("New sheet", "Sheet title", $"Sheet {p.NextSheetNumber()}");
         if (string.IsNullOrWhiteSpace(title)) return;
@@ -528,6 +567,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     public void InsertSymbol(SymbolDefinition? def)
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         def ??= Symbols.Selected;
         if (def is null || Editor is not SchematicEditor ed) return;
         ed.SetTool(new InsertSymbolTool(def));
@@ -740,6 +780,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void NumberWires(object? renumber)
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         var all = renumber is true || renumber is "all";
         if (Editor is SchematicEditor ed)
         {
@@ -760,6 +801,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void RenumberDevices()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         if (!_s.Dialogs.Confirm("Renumber devices", "Renumber all devices whose tag is not locked, in order of appearance?")) return;
         if (Editor is SchematicEditor ed)
         {
@@ -781,6 +823,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     public void Validate()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         var p = Session!.Project;
         var g = _s.Schematic.Binder.BindWithConnectivity(p);
         var report = new ValidationEngine().Run(p, g);
@@ -835,6 +878,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void ExportDrawingsPdf()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.DOCS)) return;
         var p = Session!.Project;
         var path = _s.Dialogs.SaveFile("Export drawing set", FileFilters.Pdf, SafeName($"{p.Info.Number}_{p.Info.CurrentRevision}_Drawings.pdf"));
         if (path is null) return;
@@ -845,6 +889,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void ExportReports()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.DOCS)) return;
         var vm = new ReportExportViewModel(_s.Settings.Language);
         if (_s.Dialogs.ShowDialog(vm) != true) return;
         var p = Session!.Project;
@@ -868,6 +913,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void ExportSheet(string? format)
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.DOCS)) return;
         if (ActiveDocument is not { } doc) { _s.Dialogs.ShowInfo("Export", "Open the sheet to export first."); return; }
         var p = Session!.Project;
         format ??= "dxf";
@@ -896,6 +942,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void HandoverPackage()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.DOCS)) return;
         var p = Session!.Project;
         var path = _s.Dialogs.SaveFile("Handover package folder (a ZIP is created next to it)", FileFilters.Any, SafeName($"{p.Info.Number}_{p.Info.CurrentRevision}_Handover"));
         if (path is null) return;
@@ -909,6 +956,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ImportDxf()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) return;
         if (Editor is not { } ed) { _s.Dialogs.ShowInfo("Import DXF", "Open the target sheet first."); return; }
         var file = _s.Dialogs.OpenFile("Import DXF", FileFilters.Dxf);
         if (file is null) return;
@@ -930,6 +978,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void ImportCatalog()
     {
+        if (!Require(DND.Electrical.Licensing.EngineeringModule.CATALOG)) return;
         var file = _s.Dialogs.OpenFile("Import product catalogue", FileFilters.Catalog);
         if (file is null) return;
         try
@@ -963,10 +1012,31 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand] private void OpenHelp(string? articleId) => _s.Dialogs.Show(new HelpCenterViewModel(_s, articleId));
     [RelayCommand] private void OpenAbout() => _s.Dialogs.ShowDialog(new AboutViewModel());
-    [RelayCommand(CanExecute = nameof(IsProjectOpen))] private void OpenCalculations() => _s.Dialogs.Show(new CalculationsViewModel(Session!.Project, () => { Session.MarkDirty(); Explorer.Refresh(Session.Project); }));
-    [RelayCommand(CanExecute = nameof(IsProjectOpen))] private void OpenEngineeringData() => _s.Dialogs.Show(new EngineeringDataViewModel(_s, Session!.Project, () => { Session.MarkDirty(); RefreshAll(); }));
-    [RelayCommand] private void OpenAssistant() => _s.Dialogs.Show(new AssistantViewModel(_s.Assistant, () => Session?.Project, ApplyFix));
-    [RelayCommand] private void OpenSymbolEditor() => _s.Dialogs.Show(new SymbolEditorViewModel(_s.Symbols, _s.Permissions, Symbols.Selected));
+    [RelayCommand(CanExecute = nameof(IsProjectOpen))]
+    private void OpenCalculations()
+    {
+        if (Require(DND.Electrical.Licensing.EngineeringModule.ELEC))
+            _s.Dialogs.Show(new CalculationsViewModel(Session!.Project, () => { Session.MarkDirty(); Explorer.Refresh(Session.Project); }, _s.Licensing));
+    }
+
+    [RelayCommand(CanExecute = nameof(IsProjectOpen))]
+    private void OpenEngineeringData()
+    {
+        if (Require(DND.Electrical.Licensing.EngineeringModule.ELEC))
+            _s.Dialogs.Show(new EngineeringDataViewModel(_s, Session!.Project, () => { Session.MarkDirty(); RefreshAll(); }));
+    }
+
+    [RelayCommand]
+    private void OpenAssistant()
+    {
+        if (Require(DND.Electrical.Licensing.EngineeringModule.AI)) _s.Dialogs.Show(new AssistantViewModel(_s.Assistant, () => Session?.Project, ApplyFix));
+    }
+
+    [RelayCommand]
+    private void OpenSymbolEditor()
+    {
+        if (Require(DND.Electrical.Licensing.EngineeringModule.ELEC)) _s.Dialogs.Show(new SymbolEditorViewModel(_s.Symbols, _s.Permissions, Symbols.Selected));
+    }
 
     [RelayCommand]
     private void OpenSettings()
@@ -1058,7 +1128,7 @@ public sealed partial class MainViewModel : ObservableObject
         new("Import DXF into sheet", "Tools", "", ImportDxfCommand), new("Import product catalogue", "Tools", "", ImportCatalogCommand),
         new("Symbol editor", "Tools", "", OpenSymbolEditorCommand), new("Settings", "Tools", "", OpenSettingsCommand), new("Engineering assistant", "Tools", "", OpenAssistantCommand),
         new("Help center", "Help", "F1", OpenHelpCommand), new("About", "Help", "", OpenAboutCommand),
-        new("Plugins", "Tools", "", ManagePluginsCommand), new("Duplicate project", "Project", "", DuplicateProjectCommand),
+        new("Plugins", "Tools", "", ManagePluginsCommand), new("Licensing and subscription", "Help", "", OpenLicensingCommand), new("Duplicate project", "Project", "", DuplicateProjectCommand),
         new("Set company logo", "Project", "", SetCompanyLogoCommand),
     }.Concat(_s.Plugins.Commands.Select(c => new PaletteCommand(c.Title, c.Category, "", new RelayCommand(c.Execute)))).ToList();
 

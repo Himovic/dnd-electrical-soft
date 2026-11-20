@@ -188,10 +188,16 @@ public sealed partial class CalculationsViewModel : ObservableObject
     private readonly Action _changed;
     private CalculationResult? _last;
 
-    public CalculationsViewModel(ElectricalProject project, Action changed)
+    private readonly DND.Electrical.Licensing.IEntitlements _entitlements;
+
+    /// <summary>Calculators belonging to D&amp;D PowerStudio (POWER module); the others are part of ELEC.</summary>
+    public static readonly IReadOnlySet<string> PowerStudioCalculators = new HashSet<string> { "sc", "tr", "motor", "loads", "balance" };
+
+    public CalculationsViewModel(ElectricalProject project, Action changed, DND.Electrical.Licensing.IEntitlements entitlements)
     {
         _project = project;
         _changed = changed;
+        _entitlements = entitlements;
         var v = project.Settings.NominalVoltage.ToString(CultureInfo.InvariantCulture);
         static CalcField F(string k, string l, string v, string u = "", params string[] o) => new(k, l, v, u, o.Length > 0 ? o : null);
         Calculators = new List<CalculatorDefinition>
@@ -243,6 +249,7 @@ public sealed partial class CalculationsViewModel : ObservableObject
         var fields = Selected.Fields.ToDictionary(f => f.Key);
         try
         {
+            _entitlements.Demand(PowerStudioCalculators.Contains(Selected.Id) ? DND.Electrical.Licensing.EngineeringModule.POWER : DND.Electrical.Licensing.EngineeringModule.ELEC);
             double D(string k) => double.TryParse(fields[k].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)
                 ? v : throw new ArgumentException($"'{fields[k].Label}' is not a number (use '.' as decimal separator).");
             string S(string k) => fields[k].Value;
@@ -251,7 +258,7 @@ public sealed partial class CalculationsViewModel : ObservableObject
             Status = _last.Status.ToString();
             Summary = _last.Summary;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex) when (ex is ArgumentException or DND.Electrical.Licensing.LicenseException)
         {
             _last = null;
             Error = ex.Message;
@@ -364,6 +371,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
     [RelayCommand]
     private void AddPlcStation()
     {
+        if (!_s.Licensing.IsEnabled(DND.Electrical.Licensing.EngineeringModule.AUTO)) { _s.Dialogs.ShowError(Title, "PLC configuration requires the Automation Engineering (AUTO) module."); return; }
         var tag = Ask("PLC station tag", $"-A{_p.PlcStations.Count + 1}"); if (string.IsNullOrWhiteSpace(tag)) return;
         var profile = Ask($"Addressing profile ({string.Join(", ", PlcProfile.BuiltIn.Select(p => p.Id))})", "generic-iec") ?? "generic-iec";
         SelectedStation = PlcService.CreateStation(_p, tag.Trim(), "PLC", PlcProfile.Get(profile).Id);
@@ -375,6 +383,7 @@ public sealed partial class EngineeringDataViewModel : ObservableObject
     [RelayCommand]
     private void AddPlcModule(PlcModuleType? type)
     {
+        if (!_s.Licensing.IsEnabled(DND.Electrical.Licensing.EngineeringModule.AUTO)) { _s.Dialogs.ShowError(Title, "PLC configuration requires the Automation Engineering (AUTO) module."); return; }
         var st = SelectedStation ?? _p.PlcStations.FirstOrDefault();
         if (st is null || type is null) { _s.Dialogs.ShowInfo(Title, "Create a PLC station and choose a module type."); return; }
         PlcService.AddModule(st, st.Racks[0], type.Id);

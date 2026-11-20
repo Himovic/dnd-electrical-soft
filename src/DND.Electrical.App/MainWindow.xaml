@@ -36,7 +36,7 @@
         <Border DockPanel.Dock="Top" Background="{DynamicResource Brush.Header}" Padding="10,6">
             <DockPanel>
                 <Image Source="pack://application:,,,/Assets/dnd-logo-256.png" Height="28" Margin="0,0,10,0"/>
-                <TextBlock Text="D&amp;D Electrical Engineering Suite" Foreground="{DynamicResource Brush.HeaderText}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="D&amp;D Electrical &amp; Automation Engineering Suite" Foreground="{DynamicResource Brush.HeaderText}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding PoweredBy}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="12,2,0,0"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
                     <TextBox x:Name="SearchBox" Width="300" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search everywhere (Ctrl+F): sheets, devices, wires, cables, PLC tags, help"/>
@@ -208,6 +208,7 @@
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE82D;" Content="Getting started" Command="{Binding OpenHelpCommand}" CommandParameter="01-introduction"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE765;" Content="Shortcuts" Command="{Binding OpenHelpCommand}" CommandParameter="03-interface-overview"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE789;" Content="What's new" Command="{Binding OpenHelpCommand}" CommandParameter="27-release-notes"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xE8D7;" Content="Licensing" Command="{Binding OpenLicensingCommand}" ToolTip="Licence status, modules, activation and subscription"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE946;" Content="About" Command="{Binding OpenAboutCommand}"/>
                     </StackPanel></GroupBox>
                 </StackPanel>
@@ -233,6 +234,7 @@
             <DockPanel>
                 <TextBlock DockPanel.Dock="Right" Text="{Binding ActiveDocument.CursorText}" Foreground="{DynamicResource Brush.HeaderText}" Margin="16,0,0,0"/>
                 <TextBlock DockPanel.Dock="Right" Text="{Binding ActiveDocument.Title}" Foreground="#94A3B8" Margin="16,0,0,0"/>
+                <TextBlock DockPanel.Dock="Right" Margin="16,0,0,0" Foreground="#94A3B8"><Hyperlink Command="{Binding OpenLicensingCommand}" Foreground="#94A3B8"><Run Text="{Binding LicenseStatusText, Mode=OneWay}"/></Hyperlink></TextBlock>
                 <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource Brush.HeaderText}" TextTrimming="CharacterEllipsis"/>
             </DockPanel>
         </Border>
@@ -348,7 +350,8 @@
                         <StackPanel Orientation="Horizontal">
                             <Image Source="pack://application:,,,/Assets/dnd-logo-256.png" Height="84" Margin="0,0,20,0"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="D&amp;D Electrical Engineering Suite" FontSize="30" FontWeight="SemiBold"/>
+                                <TextBlock Text="D&amp;D Electrical &amp; Automation Engineering Suite" FontSize="30" FontWeight="SemiBold"/>
+                                <TextBlock Text="One Platform. Multiple Engineering Disciplines. Unlimited Possibilities." FontSize="15" Foreground="{DynamicResource Brush.Accent}" Margin="0,2,0,2"/>
                                 <TextBlock Text="{Binding PoweredBy}" Style="{StaticResource Subtle}" FontSize="14"/>
                             </StackPanel>
                         </StackPanel>

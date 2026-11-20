@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D&amp;D License Administration Portal</title>
+<style>
+  :root { --navy:#172B4D; --blue:#2563EB; --bg:#F4F6FA; --grey:#64748B; --border:#D9DEE8; --red:#DC2626; --green:#16A34A; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Segoe UI", system-ui, sans-serif; background:var(--bg); color:#0F172A; font-size:14px; }
+  header { background:var(--navy); color:#fff; padding:12px 24px; display:flex; align-items:center; gap:16px; }
+  header h1 { font-size:17px; margin:0; font-weight:600; }
+  header small { color:#94A3B8; }
+  nav { display:flex; gap:4px; padding:0 24px; background:#fff; border-bottom:1px solid var(--border); }
+  nav button { border:0; background:none; padding:12px 14px; cursor:pointer; font-size:14px; color:var(--grey); border-bottom:2px solid transparent; }
+  nav button.active { color:var(--navy); border-bottom-color:var(--blue); font-weight:600; }
+  main { padding:24px; max-width:1300px; }
+  section { display:none; } section.active { display:block; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; }
+  h2 { font-size:16px; margin:0 0 12px; color:var(--navy); }
+  label { display:block; font-size:12px; color:var(--grey); margin:8px 0 3px; }
+  input, select, textarea { width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:4px; font:inherit; }
+  .grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:0 16px; }
+  .modules { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin-top:6px; }
+  .modules label { display:flex; gap:6px; align-items:center; color:#0F172A; margin:0; font-size:13px; }
+  .modules input { width:auto; }
+  button.primary { background:var(--blue); color:#fff; border:0; border-radius:4px; padding:7px 16px; cursor:pointer; margin-top:12px; }
+  button.small { border:1px solid var(--border); background:#fff; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:12px; margin-right:4px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { background:var(--bg); color:var(--grey); font-weight:600; }
+  .status-Active { color:var(--green); font-weight:600; } .status-Revoked { color:var(--red); font-weight:600; } .status-Suspended { color:#D97706; font-weight:600; }
+  #msg { position:fixed; bottom:16px; right:16px; background:var(--navy); color:#fff; padding:10px 16px; border-radius:6px; display:none; max-width:480px; }
+  #msg.error { background:var(--red); }
+  code { background:var(--bg); padding:1px 4px; border-radius:3px; }
+  footer { color:var(--grey); font-size:12px; padding:0 24px 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>D&amp;D License Administration Portal</h1>
+  <small>D&amp;D Electrical &amp; Automation Engineering Suite · D&amp;D | Data&amp;Development</small>
+  <span style="flex:1"></span><span id="who"></span>
+</header>
+<nav id="tabs"></nav>
+<main>
+  <section id="login" class="active"><div class="card" style="max-width:380px">
+    <h2>Administrator sign-in</h2>
+    <label>User</label><input id="lUser" value="admin">
+    <label>Password</label><input id="lPwd" type="password">
+    <button class="primary" onclick="login()">Sign in</button>
+  </div></section>
+
+  <section id="customers"><div class="card">
+    <h2>New customer</h2>
+    <div class="grid">
+      <div><label>Name *</label><input id="cName"></div><div><label>Organization</label><input id="cOrg"></div>
+      <div><label>E-mail</label><input id="cEmail"></div><div><label>Country</label><input id="cCountry"></div>
+    </div>
+    <button class="primary" onclick="createCustomer()">Create customer</button>
+  </div><div class="card"><h2>Customers and organizations</h2><table id="custTable"></table></div></section>
+
+  <section id="newlicense"><div class="card">
+    <h2>Generate licence</h2>
+    <div class="grid">
+      <div><label>Customer *</label><select id="nCustomer" onchange="fillOrgs()"></select></div>
+      <div><label>Organization</label><select id="nOrg"></select></div>
+      <div><label>Owner</label><input id="nOwner"></div>
+      <div><label>Subscription</label><select id="nType"><option>Annual</option><option>Monthly</option><option>Perpetual</option><option>PerpetualWithMaintenance</option><option>Enterprise</option><option>Trial</option><option>Evaluation</option></select></div>
+      <div><label>Seat model</label><select id="nSeats"><option>Device</option><option>NamedUser</option><option>Floating</option></select></div>
+      <div><label>Valid from</label><input id="nFrom" type="date"></div>
+      <div><label>Valid until (subscriptions, trials)</label><input id="nUntil" type="date"></div>
+      <div><label>Max users</label><input id="nUsers" type="number" value="1" min="1"></div>
+      <div><label>Max devices</label><input id="nDevices" type="number" value="1" min="1"></div>
+      <div><label>Concurrent users (floating)</label><input id="nConc" type="number" value="0" min="0"></div>
+      <div><label>Grace period (days)</label><input id="nGrace" type="number" value="14" min="0" max="90"></div>
+      <div><label>Online revalidation (days, 0 = never)</label><input id="nReval" type="number" value="30" min="0"></div>
+      <div><label>Offline use allowed</label><select id="nOffline"><option value="true">Yes</option><option value="false">No (revalidation required)</option></select></div>
+      <div style="grid-column: span 3"><label>Notes</label><input id="nNotes"></div>
+    </div>
+    <label>Licensed modules *</label><div class="modules" id="nModules"></div>
+    <button class="primary" onclick="createLicense()">Generate licence</button>
+    <div id="created" style="margin-top:12px"></div>
+  </div></section>
+
+  <section id="licenses"><div class="card"><h2>Licences</h2><table id="licTable"></table></div>
+    <div class="card" id="actCard" style="display:none"><h2 id="actTitle">Activations</h2><table id="actTable"></table></div></section>
+
+  <section id="offline"><div class="card">
+    <h2>Offline activation</h2>
+    <p>Paste the activation request exported by the workstation (Licensing ▸ Export activation request). The response licence file is downloaded and imported on the workstation.</p>
+    <textarea id="oReq" rows="8" placeholder='{"LicenseId":"LIC-…","DeviceId":"…","DeviceName":"…","User":"…"}'></textarea>
+    <button class="primary" onclick="offline()">Generate licence file</button>
+  </div></section>
+
+  <section id="usage"><div class="card"><h2>Licence usage</h2><table id="usageTable"></table>
+    <button class="primary" onclick="downloadCsv()">Export licensing report (CSV)</button></div></section>
+
+  <section id="audit"><div class="card"><h2>Audit log</h2><table id="auditTable"></table></div></section>
+</main>
+<footer>© 2026 D&amp;D | Data&amp;Development. All rights reserved. · One Platform. Multiple Engineering Disciplines. Unlimited Possibilities.</footer>
+<div id="msg"></div>
+<script>
+let token = null, customers = [], orgs = [];
+const sections = [["login","Sign in"],["customers","Customers"],["newlicense","Generate licence"],["licenses","Licences"],["offline","Offline activation"],["usage","Usage"],["audit","Audit log"]];
+const tabs = document.getElementById("tabs");
+sections.forEach(([id,label]) => { const b=document.createElement("button"); b.textContent=label; b.onclick=()=>show(id); b.id="tab-"+id; tabs.appendChild(b); });
+function show(id){ if(id!=="login" && !token){ note("Sign in first.", true); return; }
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("active", s.id===id));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active", b.id==="tab-"+id));
+  ({customers:loadCustomers, newlicense:prepareLicense, licenses:loadLicenses, usage:loadUsage, audit:loadAudit}[id]||(()=>{}))(); }
+function note(t, err){ const m=document.getElementById("msg"); m.textContent=t; m.className=err?"error":""; m.style.display="block"; clearTimeout(m.t); m.t=setTimeout(()=>m.style.display="none", 5000); }
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function api(path, method="GET", body){
+  const r = await fetch(path, {method, headers:{"Content-Type":"application/json", ...(token?{"Authorization":"Bearer "+token}:{})}, body: body?JSON.stringify(body):undefined});
+  if (r.status===401 && path!=="/api/admin/login"){ token=null; show("login"); throw new Error("Session expired."); }
+  const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  if (!r.ok) throw new Error((data && data.error) || r.statusText);
+  return data;
+}
+async function login(){ try { const d = await api("/api/admin/login","POST",{user:lUser.value,password:lPwd.value}); token=d.token; who.textContent="Signed in as "+lUser.value; note("Signed in."); show("licenses"); } catch(e){ note(e.message,true); } }
+async function loadCustomers(){ customers = await api("/api/admin/customers"); orgs = await api("/api/admin/organizations");
+  custTable.innerHTML = "<tr><th>Id</th><th>Name</th><th>E-mail</th><th>Country</th><th>Organizations</th></tr>" + customers.map(c=>`<tr><td><code>${esc(c.id)}</code></td><td>${esc(c.name)}</td><td>${esc(c.email)}</td><td>${esc(c.country)}</td><td>${orgs.filter(o=>o.customerId===c.id).map(o=>esc(o.name)+" <code>"+esc(o.id)+"</code>").join("<br>")}</td></tr>`).join(""); }
+async function createCustomer(){ try { await api("/api/admin/customers","POST",{name:cName.value,email:cEmail.value,country:cCountry.value,organization:cOrg.value}); note("Customer created."); cName.value=cOrg.value=cEmail.value=cCountry.value=""; loadCustomers(); } catch(e){ note(e.message,true); } }
+async function prepareLicense(){ await loadCustomers(); nCustomer.innerHTML = customers.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join(""); fillOrgs();
+  const mods = await api("/api/admin/modules"); nModules.innerHTML = mods.map(m=>`<label title="${esc(m.purpose)}"><input type="checkbox" value="${esc(m.code)}"> ${esc(m.code)} – ${esc(m.name)}</label>`).join("");
+  nFrom.valueAsDate = new Date(); const u = new Date(); u.setFullYear(u.getFullYear()+1); nUntil.valueAsDate = u; }
+function fillOrgs(){ nOrg.innerHTML = orgs.filter(o=>o.customerId===nCustomer.value).map(o=>`<option value="${esc(o.id)}">${esc(o.name)}</option>`).join(""); }
+async function createLicense(){
+  const modules = [...nModules.querySelectorAll("input:checked")].map(i=>i.value);
+  const body = { customerId:nCustomer.value, organizationId:nOrg.value||null, owner:nOwner.value, subscription:nType.value, seats:nSeats.value, modules,
+    validFrom: nFrom.value ? new Date(nFrom.value).toISOString() : null, validUntil: nUntil.value ? new Date(nUntil.value).toISOString() : null,
+    maxUsers:+nUsers.value, maxDevices:+nDevices.value, maxConcurrent:+nConc.value, offlineAllowed: nOffline.value==="true", gracePeriodDays:+nGrace.value, revalidationDays:+nReval.value, notes:nNotes.value };
+  try { const l = await api("/api/admin/licenses","POST",body); created.innerHTML = `Licence <code>${esc(l.id)}</code> created. Activation key for the customer: <code style="font-size:15px">${esc(l.licenseKey)}</code>`; note("Licence generated."); } catch(e){ note(e.message,true); } }
+async function loadLicenses(){ const ls = await api("/api/admin/licenses");
+  licTable.innerHTML = "<tr><th>Licence</th><th>Organization</th><th>Subscription</th><th>Seats</th><th>Modules</th><th>Validity</th><th>Status</th><th>Actions</th></tr>" +
+    ls.map(l=>`<tr><td><code>${esc(l.id)}</code><br><small>key ${esc(l.licenseKey)}</small></td><td>${esc(l.organizationName)}</td><td>${esc(l.subscription)}</td><td>${esc(l.seats)} · ${l.maxDevices} dev${l.seats==="Floating"?" · "+l.maxConcurrent+" concurrent":""}</td><td>${esc(l.modules).replaceAll(","," ")}</td>
+      <td>${esc((l.validFrom||"").slice(0,10))} → ${l.validUntil?esc(l.validUntil.slice(0,10)):"perpetual"}</td><td class="status-${esc(l.status)}">${esc(l.status)}</td>
+      <td><button class="small" onclick="acts('${esc(l.id)}')">Activations</button><button class="small" onclick="extend('${esc(l.id)}')">Extend</button><button class="small" onclick="renew('${esc(l.id)}')">Renew</button>
+      <button class="small" onclick="act('${esc(l.id)}','suspend')">Suspend</button><button class="small" onclick="act('${esc(l.id)}','reactivate')">Reactivate</button><button class="small" onclick="if(confirm('Revoke this licence? Devices lock on next refresh.'))act('${esc(l.id)}','revoke')">Revoke</button></td></tr>`).join(""); }
+async function act(id, verb){ try { await api(`/api/admin/licenses/${encodeURIComponent(id)}/${verb}`,"POST",{}); note(`Licence ${verb}d.`); loadLicenses(); } catch(e){ note(e.message,true); } }
+async function extend(id){ const d = prompt("Extend by how many days?","30"); if(!d) return; try { await api(`/api/admin/licenses/${encodeURIComponent(id)}/extend`,"POST",{days:+d}); note("Extended."); loadLicenses(); } catch(e){ note(e.message,true); } }
+async function renew(id){ const d = prompt("New expiry date (yyyy-mm-dd)"); if(!d) return; try { await api(`/api/admin/licenses/${encodeURIComponent(id)}/renew`,"POST",{validUntil:new Date(d).toISOString()}); note("Renewed."); loadLicenses(); } catch(e){ note(e.message,true); } }
+async function acts(id){ const a = await api(`/api/admin/licenses/${encodeURIComponent(id)}/activations`); actCard.style.display="block"; actTitle.textContent="Activations – "+id;
+  actTable.innerHTML = "<tr><th>Device</th><th>User</th><th>Activated</th><th>Last seen</th><th>State</th><th></th></tr>" + a.map(x=>`<tr><td>${esc(x.deviceName)}<br><small><code>${esc(x.deviceId)}</code></small></td><td>${esc(x.user)}</td><td>${esc(x.activatedAt.slice(0,16))}${x.offline?" (offline)":""}</td><td>${esc(x.lastSeenAt.slice(0,16))}</td><td>${x.deactivatedAt?"Deactivated":"Active"}</td>
+    <td>${x.deactivatedAt?"":`<button class="small" onclick="deact('${esc(x.id)}','${esc(id)}')">Deactivate device</button>`}</td></tr>`).join(""); }
+async function deact(aid, lid){ try { await api(`/api/admin/activations/${aid}/deactivate`,"POST",{}); note("Device deactivated."); acts(lid); } catch(e){ note(e.message,true); } }
+async function offline(){ try { const req = JSON.parse(oReq.value); const lic = await api("/api/admin/offline-activation","POST",req);
+  const blob = new Blob([JSON.stringify(lic,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(req.LicenseId||req.licenseId)+"-"+(req.DeviceName||req.deviceName||"device")+".dndlic"; a.click(); note("Licence file generated."); } catch(e){ note(e.message,true); } }
+async function loadUsage(){ const u = await api("/api/admin/usage"); usageTable.innerHTML = "<tr><th>Licence</th><th>Organization</th><th>Subscription</th><th>Status</th><th>Valid until</th><th>Devices</th><th>Floating seats</th><th>Modules</th></tr>" +
+  u.map(x=>`<tr><td><code>${esc(x.id)}</code></td><td>${esc(x.organizationName)}</td><td>${esc(x.subscription)}</td><td class="status-${esc(x.status)}">${esc(x.status)}</td><td>${x.validUntil?esc(x.validUntil.slice(0,10)):"perpetual"}</td><td>${esc(x.devices)}</td><td>${esc(x.floating)}</td><td>${esc(x.modules).replaceAll(","," ")}</td></tr>`).join(""); }
+async function downloadCsv(){ const r = await fetch("/api/admin/reports/licenses.csv",{headers:{"Authorization":"Bearer "+token}}); const b = await r.blob(); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="dnd-licences.csv"; a.click(); }
+async function loadAudit(){ const a = await api("/api/admin/audit"); auditTable.innerHTML = "<tr><th>Time (UTC)</th><th>Actor</th><th>Action</th><th>Licence</th><th>Details</th></tr>" + a.map(x=>`<tr><td>${esc(x.at.slice(0,19))}</td><td>${esc(x.actor)}</td><td>${esc(x.action)}</td><td><code>${esc(x.licenseId)}</code></td><td>${esc(x.details)}</td></tr>`).join(""); }
+show("login");
+</script>
+</body>
+</html>

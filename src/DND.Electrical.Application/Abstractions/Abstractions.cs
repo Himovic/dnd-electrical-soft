@@ -67,6 +67,7 @@ public sealed class UserSettings
     public string UserName { get; set; } = Environment.UserName;
     public string Role { get; set; } = "Administrator";
     public string AssistantProvider { get; set; } = "local";
+    public string LicenseServerUrl { get; set; } = "https://licensing.dnd-engineering.example/";
     public bool FirstRun { get; set; } = true;
 
     /// <summary>SHA-256 hashes of plugin assemblies trusted by an administrator.</summary>
@@ -103,6 +104,7 @@ public sealed class AppPaths
     public string Documentation => Path.Combine(Root, "Documentation");
     public string DemoProjects => Path.Combine(Root, "DemoProjects");
     public string Secrets => Path.Combine(Root, "secrets.bin");
+    public string Licensing => Path.Combine(Root, "Licensing");
 
     public void EnsureCreated()
     {

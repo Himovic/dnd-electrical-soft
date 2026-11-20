@@ -227,6 +227,7 @@ public sealed class AboutViewModel : DialogViewModel
     public string Developer => ProductInfo.Developer;
     public string Copyright => ProductInfo.Copyright;
     public string PoweredBy => ProductInfo.PoweredBy;
+    public string Tagline => ProductInfo.Tagline;
     public string Runtime => $".NET {Environment.Version} · {System.Runtime.InteropServices.RuntimeInformation.OSDescription}";
     public string Notice => "Calculation results are preliminary engineering aids and do not certify compliance with any standard. Demo projects contain fictional data.";
 }

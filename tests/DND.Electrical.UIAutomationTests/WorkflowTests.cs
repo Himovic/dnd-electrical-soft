@@ -21,7 +21,7 @@ public class WorkflowTests
         Assert.True(h.Main.ShowStartPage);
         Assert.False(h.Main.IsProjectOpen);
         Assert.Equal(5, h.Main.DemoProjects.Count);
-        Assert.Contains("D&D Electrical Engineering Suite", h.Main.Title);
+        Assert.Contains("D&D Electrical & Automation Engineering Suite", h.Main.Title);
         Assert.Equal("Powered by D&D | Data&Development", h.Main.PoweredBy);
         Assert.False(h.Main.SaveCommand.CanExecute(null));
     }
@@ -196,7 +196,7 @@ public class WorkflowTests
         using var h = new UiHarness();
         h.Dialogs.ConfirmAnswer = false;
         await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-PWR-003");
-        var calc = new CalculationsViewModel(h.Main.Session!.Project, () => { });
+        var calc = new CalculationsViewModel(h.Main.Session!.Project, () => { }, h.Licensing);
         calc.Selected = calc.Calculators.First(c => c.Id == "vd");
         calc.CalculateCommand.Execute(null);
         Assert.Equal("Pass", calc.Status);
@@ -260,5 +260,62 @@ public class WorkflowTests
         Assert.Single(palette.Results);
         palette.RunCommand.Execute(null);
         Assert.Contains(h.Dialogs.Shown, v => v is AboutViewModel);
+    }
+}
+
+public class LicensingWorkflowTests
+{
+    [Fact]
+    public async Task Without_elec_licence_projects_open_read_only_and_modules_show_upgrade_page()
+    {
+        using var h = new UiHarness();
+        // Replace the full test licence with one that only covers DOCS.
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.DOCS);
+        var services = h.Services with { Licensing = limited };
+        var main = new MainViewModel(services);
+        h.Dialogs.ConfirmAnswer = false;
+        await main.OpenDemoCommand.ExecuteAsync("DEMO-IND-001");
+        Assert.True(main.IsProjectOpen);
+        var ed = main.ActiveDocument!.Editor;
+        Assert.True(ed.IsReadOnly);
+        var count = ed.Drawing.Entities.Count;
+        main.SetToolCommand.Execute("wire");
+        Assert.IsType<DND.Electrical.CAD.Tools.SelectTool>(ed.ActiveTool);
+        ed.SelectAll();
+        ed.DeleteSelection();
+        Assert.Equal(count, ed.Drawing.Entities.Count);
+
+        main.NumberWiresCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "ELEC");
+        main.OpenAssistantCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "AI");
+
+        // Calculations: POWER calculators are refused even when the window is reached.
+        var calc = new CalculationsViewModel(main.Session!.Project, () => { }, limited);
+        calc.Selected = calc.Calculators.First(c => c.Id == "sc");
+        calc.CalculateCommand.Execute(null);
+        Assert.Contains("POWER", calc.Error);
+    }
+
+    [Fact]
+    public void Documentation_service_enforces_docs_module()
+    {
+        using var h = new UiHarness();
+        var noDocs = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "nodocs"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        var docs = new DND.Electrical.Application.Exports.DocumentationService(h.Services.Schematic, noDocs);
+        var project = h.Services.Demos.Create("DEMO-IND-001");
+        Assert.Throws<DND.Electrical.Licensing.LicenseException>(() => docs.DrawingSetPdf(project, h.PathFor("x.pdf")));
+        Assert.False(File.Exists(h.PathFor("x.pdf")));
+    }
+
+    [Fact]
+    public void Licensing_page_shows_status_and_modules()
+    {
+        using var h = new UiHarness();
+        var vm = new LicensingViewModel(h.Licensing, h.Services.Settings, h.Dialogs, () => { }, h.Services.Paths);
+        Assert.Equal("Valid", vm.State);
+        Assert.Equal(12, vm.Modules.Count);
+        Assert.All(vm.Modules, m => Assert.True(m.Licensed));
+        Assert.Contains(vm.Details, d => d.Label == "Licence ID" && d.Value == "LIC-TEST-SUITE");
     }
 }

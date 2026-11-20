@@ -27,7 +27,8 @@ public sealed class TestEnvironment : IDisposable
         Recovery = new FileRecoveryStore(Paths, Store);
         Projects = new ProjectService(Store, Locks, Backups, Recovery, Schematic);
         Demos = new DemoProjectFactory(Schematic);
-        Docs = new DocumentationService(Schematic);
+        Licensing = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(Folder, "licensing"));
+        Docs = new DocumentationService(Schematic, Licensing);
     }
 
     public string Folder { get; }
@@ -40,6 +41,7 @@ public sealed class TestEnvironment : IDisposable
     public ProjectService Projects { get; }
     public DemoProjectFactory Demos { get; }
     public DocumentationService Docs { get; }
+    public DND.Electrical.Licensing.LicenseManager Licensing { get; }
 
     public string PathFor(string name) => Path.Combine(Folder, name);
 

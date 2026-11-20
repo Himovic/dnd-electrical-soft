@@ -1,8 +1,8 @@
-; Inno Setup script for D&D Electrical Engineering Suite
+; Inno Setup script for D&D Electrical & Automation Engineering Suite
 ; Build: scripts/publish-windows.ps1, then ISCC.exe installers\DND-Electrical-Setup.iss
 
-#define AppName "D&D Electrical Engineering Suite"
-#define AppVersion "0.4.0"
+#define AppName "D&D Electrical & Automation Engineering Suite"
+#define AppVersion "0.5.0"
 #define AppPublisher "D&D | Data&Development"
 #define AppExe "DND.ElectricalSuite.exe"
 #define Publish "..\artifacts\publish"
@@ -16,7 +16,7 @@ AppPublisher={#AppPublisher}
 AppCopyright=© 2026 D&D | Data&Development. All rights reserved.
 VersionInfoCompany={#AppPublisher}
 VersionInfoDescription={#AppName} – Powered by D&D | Data&Development
-DefaultDirName={autopf}\DND\Electrical Engineering Suite
+DefaultDirName={autopf}\DND\Engineering Suite
 DefaultGroupName={#AppName}
 OutputDir=..\artifacts\installer
 OutputBaseFilename=DND-Electrical-Engineering-Suite-Setup
@@ -58,4 +58,4 @@ Root: HKA; Subkey: "Software\Classes\DND.ElectricalProject\shell\open\command"; 
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
 
 [Messages]
-WelcomeLabel2=This will install [name/ver] on your computer.%n%nAuthor & Developer: D&D | Data&Development%n© 2026 D&D | Data&Development. All rights reserved.
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nDeveloped by D&D | Data&Development%nOne Platform. Multiple Engineering Disciplines. Unlimited Possibilities.%n© 2026 D&D | Data&Development. All rights reserved.

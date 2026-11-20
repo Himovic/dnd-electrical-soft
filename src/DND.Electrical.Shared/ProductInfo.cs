@@ -8,8 +8,13 @@ namespace DND.Electrical.Shared;
 /// </summary>
 public static class ProductInfo
 {
-    public const string ProductName = "D&D Electrical Engineering Suite";
-    public const string ShortName = "D&D Electrical";
+    public const string ProductName = "D&D Electrical & Automation Engineering Suite";
+    public const string ShortName = "D&D Engineering Suite";
+    public const string ProductId = "DND-EAES";
+    public const string Company = "D&D | Data&Development";
+    public const string Tagline = "One Platform. Multiple Engineering Disciplines. Unlimited Possibilities.";
+    public const string Positioning = "A unified engineering platform for electrical design, industrial automation, power systems, infrastructure, 3D engineering, BIM, and digital transformation.";
+    public const string Motto = "One engineering object. Multiple engineering representations. One connected lifecycle.";
     public const string Author = "D&D | Data&Development";
     public const string Developer = "D&D | Data&Development";
     public const string Copyright = "© 2026 D&D | Data&Development. All rights reserved.";
@@ -40,5 +45,5 @@ public static class ProductInfo
 
     /// <summary>Text block used in generated documents and the About window.</summary>
     public static string AttributionBlock =>
-        $"{ProductName}\nAuthor & Developer: {Author}\n{Copyright}";
+        $"{ProductName}\nDeveloped by {Developer}\n{Copyright}";
 }

@@ -252,3 +252,32 @@ public class CadEngineTests
         Assert.Equal(1, r.SkippedEntityTypes["HATCH"]);
     }
 }
+
+public class ReadOnlyEditorTests
+{
+    [Fact]
+    public void Read_only_editor_refuses_every_modification()
+    {
+        var ed = new CadEditor(new CadDrawing());
+        var line = new LineEntity(new Point2(0, 0), new Point2(10, 0));
+        ed.Drawing.Add(line);
+        ed.IsReadOnly = true;
+        string? status = null;
+        ed.StatusMessage += (_, m) => status = m;
+        ed.AddEntity(new CircleEntity(Point2.Zero, 5));
+        ed.Selection.Set(new[] { line.Id });
+        ed.MoveSelection(new Point2(5, 5));
+        ed.DeleteSelection();
+        ed.CopySelection();
+        Assert.Empty(ed.Paste());
+        ed.SetTool(new LineTool());
+        Assert.IsType<SelectTool>(ed.ActiveTool);
+        Assert.Single(ed.Drawing.Entities);
+        Assert.Equal(new Point2(0, 0), ed.Drawing.Find<LineEntity>(line.Id)!.Start);
+        Assert.NotNull(status);
+        // Viewing still works.
+        ed.ZoomExtents();
+        ed.SelectAll();
+        Assert.Single(ed.Selection.Ids);
+    }
+}

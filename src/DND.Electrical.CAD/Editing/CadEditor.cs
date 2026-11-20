@@ -64,6 +64,22 @@ public class CadEditor
     public List<ICadEditorExtension> Extensions { get; } = new();
 
     public string ActiveLayer { get; set; } = StandardLayers.Annotations;
+
+    /// <summary>
+    /// Read-only sessions (e.g. no valid licence for the discipline) allow viewing, selecting, zooming and copying,
+    /// but every modifying operation is refused at engine level.
+    /// </summary>
+    public bool IsReadOnly { get; set; }
+
+    public string ReadOnlyReason { get; set; } = "This drawing is open read-only.";
+
+    /// <summary>Returns true (and reports the reason) when a modification must be refused.</summary>
+    protected bool RefuseIfReadOnly()
+    {
+        if (!IsReadOnly) return false;
+        ShowStatus(ReadOnlyReason);
+        return true;
+    }
     public CadColor? ActiveColor { get; set; }
     public double TextHeight { get; set; } = 3.5;
 
@@ -91,6 +107,7 @@ public class CadEditor
 
     public void SetTool(CadTool tool)
     {
+        if (IsReadOnly && tool is not (SelectTool or PanTool)) { ShowStatus(ReadOnlyReason); tool = new SelectTool(); }
         _activeTool.Deactivate();
         _activeTool = tool;
         tool.Attach(this);
@@ -199,6 +216,7 @@ public class CadEditor
 
     public void AddEntities(IReadOnlyList<CadEntity> entities, string? description = null)
     {
+        if (RefuseIfReadOnly()) return;
         foreach (var e in entities)
         {
             if (e.Layer == StandardLayers.Default && ActiveLayer != StandardLayers.Default) e.Layer = ActiveLayer;
@@ -226,6 +244,7 @@ public class CadEditor
 
     public void Delete(IReadOnlyList<CadEntity> entities)
     {
+        if (RefuseIfReadOnly()) return;
         if (entities.Count == 0) return;
         var extra = new List<IUndoableAction>();
         foreach (var x in Extensions) x.OnDeleting(this, entities, extra);
@@ -242,6 +261,7 @@ public class CadEditor
 
     public void Transform(IReadOnlyList<CadEntity> entities, Matrix2 m, string description)
     {
+        if (RefuseIfReadOnly()) return;
         var movable = entities.Where(e => !Drawing.IsLayerLocked(e.Layer)).ToList();
         if (movable.Count == 0) return;
         using (Undo.BeginGroup(description))
@@ -326,6 +346,7 @@ public class CadEditor
     /// <summary>Pastes clipboard content offset by <paramref name="offset"/> (defaults to two grid steps).</summary>
     public IReadOnlyList<CadEntity> Paste(string? json = null, Point2? offset = null)
     {
+        if (RefuseIfReadOnly()) return Array.Empty<CadEntity>();
         json ??= _clipboard;
         if (json is null) return Array.Empty<CadEntity>();
         var originals = CadJson.DeserializeEntities(json);
@@ -357,6 +378,7 @@ public class CadEditor
 
     public GroupEntity? GroupSelection(string name = "")
     {
+        if (RefuseIfReadOnly()) return null;
         var items = SelectedEntities.Where(e => e.GetType() == typeof(LineEntity) || e is PolylineEntity or CircleEntity or ArcEntity or TextEntity or DimensionEntity or LeaderEntity or GroupEntity or ImageEntity).ToList();
         if (items.Count < 2) return null;
         var order = items.OrderBy(Drawing.IndexOf).ToList();
@@ -372,6 +394,7 @@ public class CadEditor
 
     public void UngroupSelection()
     {
+        if (RefuseIfReadOnly()) return;
         var groups = SelectedEntities.OfType<GroupEntity>().ToList();
         if (groups.Count == 0) return;
         var children = new List<CadEntity>();
@@ -390,6 +413,7 @@ public class CadEditor
 
     public void SetLayer(IReadOnlyList<CadEntity> entities, string layer)
     {
+        if (RefuseIfReadOnly()) return;
         if (entities.Count == 0) return;
         Drawing.AddLayer(Drawing.FindLayer(layer) ?? CadLayer.Create(layer, CadColor.Black));
         Undo.Push(ModifyEntitiesAction.Apply(Drawing, entities, $"Move to layer {layer}", l =>
@@ -401,6 +425,7 @@ public class CadEditor
     /// <summary>Applies an arbitrary property change to entities as one undoable step.</summary>
     public void ModifyEntities(IReadOnlyList<CadEntity> entities, string description, Action<CadEntity> change)
     {
+        if (RefuseIfReadOnly()) return;
         if (entities.Count == 0) return;
         Undo.Push(ModifyEntitiesAction.Apply(Drawing, entities, description, l =>
         {
@@ -416,6 +441,7 @@ public class CadEditor
 
     public bool UndoLast()
     {
+        if (RefuseIfReadOnly()) return false;
         if (_activeTool.IsBusy) _activeTool.Cancel();
         var ok = Undo.Undo();
         PruneSelection();
@@ -424,6 +450,7 @@ public class CadEditor
 
     public bool RedoLast()
     {
+        if (RefuseIfReadOnly()) return false;
         var ok = Undo.Redo();
         PruneSelection();
         return ok;

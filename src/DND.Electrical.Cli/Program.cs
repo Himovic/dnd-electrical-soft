@@ -33,11 +33,17 @@ public static class Program
         var resolver = new SymbolResolver(library);
         var schematic = new SchematicService(resolver, new SchematicBinder(resolver));
         var store = new SqliteProjectStore();
-        var docs = new DocumentationService(schematic);
+        var licensing = new DND.Electrical.Licensing.LicenseManager(
+            new DND.Electrical.Licensing.LicenseStore(Opt(args, "--license-folder") ?? new DND.Electrical.Application.Abstractions.AppPaths().Licensing),
+            DND.Electrical.Licensing.TrustedKeys.Product());
+        var docs = new DocumentationService(schematic, licensing);
+        void Need(DND.Electrical.Licensing.EngineeringModule m) => licensing.Demand(m);
         try
         {
             switch (args[0])
             {
+                case "license":
+                    return License(args, licensing);
                 case "demo":
                     return await Demo(args, schematic, store);
                 case "info":
@@ -51,6 +57,7 @@ public static class Program
                     }
                 case "validate":
                     {
+                        Need(DND.Electrical.Licensing.EngineeringModule.ELEC);
                         var p = await store.LoadAsync(args[1]);
                         var g = schematic.Binder.BindWithConnectivity(p);
                         var report = new ValidationEngine().Run(p, g);
@@ -61,6 +68,7 @@ public static class Program
                     }
                 case "number-wires":
                     {
+                        Need(DND.Electrical.Licensing.EngineeringModule.ELEC);
                         var p = await store.LoadAsync(args[1]);
                         var g = schematic.Binder.BindWithConnectivity(p);
                         var r = WireNumberingService.Apply(p, g, new WireNumberingOptions { RenumberExisting = args.Contains("--renumber") });
@@ -92,6 +100,7 @@ public static class Program
                         Console.WriteLine($"{s.Id,-22} {s.Category,-15} {s.Role,-15} {s.Name}");
                     return 0;
                 case "calc":
+                    Need(args.ElementAtOrDefault(1) is "short-circuit" or "transformer" or "motor" ? DND.Electrical.Licensing.EngineeringModule.POWER : DND.Electrical.Licensing.EngineeringModule.ELEC);
                     return Calc(args);
                 default:
                     Console.Error.WriteLine($"Unknown command '{args[0]}'.");
@@ -99,11 +108,41 @@ public static class Program
                     return 2;
             }
         }
+        catch (DND.Electrical.Licensing.LicenseException ex)
+        {
+            Console.Error.WriteLine($"licence: {ex.Message}\nRun 'dnd-electrical license status' or 'dnd-electrical license evaluation'.");
+            return 4;
+        }
         catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or KeyNotFoundException or InvalidOperationException or IndexOutOfRangeException)
         {
             Console.Error.WriteLine($"error: {ex.Message}");
             return 3;
         }
+    }
+
+    private static int License(string[] args, DND.Electrical.Licensing.LicenseManager m)
+    {
+        switch (args.ElementAtOrDefault(1) ?? "status")
+        {
+            case "install":
+                m.Install(DND.Electrical.Licensing.SignedLicense.FromJson(File.ReadAllText(args[2])));
+                break;
+            case "evaluation":
+                m.Install(DND.Electrical.Licensing.SignedLicense.FromJson(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Licensing", "evaluation.dndlic"))));
+                break;
+            case "request":
+                var path = args.ElementAtOrDefault(3) ?? "activation-request.json";
+                File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(m.CreateActivationRequest(args[2], Environment.UserName), DND.Electrical.Licensing.LicenseJson.Indented));
+                Console.WriteLine($"Activation request written to {path}");
+                return 0;
+            case "remove":
+                m.Uninstall();
+                break;
+        }
+        var e = m.Current;
+        Console.WriteLine($"State   : {e.State}\nMessage : {e.Message}\nDevice  : {m.DeviceId}");
+        if (e.Claims is { } c) Console.WriteLine($"Licence : {c.LicenseId} ({c.Subscription}, {c.OrganizationName})\nModules : {string.Join(", ", m.LicensedModules.Select(DND.Electrical.Licensing.ModuleCatalog.Code))}");
+        return e.AllowsFeatures ? 0 : 4;
     }
 
     private static async Task<int> Demo(string[] args, SchematicService schematic, SqliteProjectStore store)
@@ -131,6 +170,7 @@ public static class Program
     {
         var p = await store.LoadAsync(args[1]);
         var format = Opt(args, "--format") ?? "pdf";
+        // json/xml interchange is part of project data portability (always available); other formats need DOCS.
         var output = Opt(args, "--out") ?? Path.ChangeExtension(args[1], format);
         var options = new ReportOptions { Language = Opt(args, "--lang") ?? "en" };
         var reports = Opt(args, "--reports")?.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -204,6 +244,7 @@ public static class Program
               dnd-electrical import <package.dndpkg> <project.dndx>
               dnd-electrical symbols [--search <text>] | symbols export <file.json>
               dnd-electrical calc current|power|voltage-drop|cable|short-circuit|transformer|motor [options]
+              dnd-electrical license status|evaluation|install <file.dndlic>|request <licenceId> [file]|remove
               dnd-electrical about
             """);
     }

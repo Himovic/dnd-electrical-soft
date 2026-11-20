@@ -156,10 +156,79 @@
                 <TextBlock Grid.Row="3" Text="Copyright:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Copyright}" TextWrapping="Wrap"/>
                 <TextBlock Grid.Row="4" Text="Runtime:" Style="{StaticResource Subtle}"/><TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Runtime}" TextWrapping="Wrap"/>
             </Grid>
-            <TextBlock Text="{Binding PoweredBy}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}" Margin="0,16,0,6"/>
+            <TextBlock Text="{Binding Tagline}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}" Margin="0,16,0,2" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding PoweredBy}" Style="{StaticResource Subtle}" Margin="0,0,0,6"/>
             <TextBlock Text="{Binding Notice}" Style="{StaticResource Subtle}" TextWrapping="Wrap"/>
             <Button Content="Close" Command="{Binding OkCommand}" IsDefault="True" HorizontalAlignment="Right" Style="{StaticResource AccentButton}" Margin="0,14,0,0" MinWidth="90"/>
         </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ModuleLockedViewModel}">
+        <StackPanel Width="520">
+            <TextBlock Text="{Binding Code}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}"/>
+            <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" Margin="0,2,0,4"/>
+            <TextBlock Text="{Binding Purpose}" Style="{StaticResource Subtle}" TextWrapping="Wrap"/>
+            <Border Background="{DynamicResource Brush.Panel}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Advice}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                <Button Content="Manage licence…" Command="{Binding ManageLicenceCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Close" Command="{Binding CancelCommand}" Style="{StaticResource FlatButton}"/>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:LicensingViewModel}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="{Binding Product}" FontSize="20" FontWeight="SemiBold"/>
+            <TextBlock Text="Licensing and subscription" Style="{StaticResource Subtle}" FontSize="14"/>
+            <Border Background="{DynamicResource Brush.Panel}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,12">
+                <StackPanel>
+                    <TextBlock><Run Text="Status: " /><Run Text="{Binding State, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Accent}"/></TextBlock>
+                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Licence details" Style="{StaticResource SectionTitle}"/>
+                    <ItemsControl ItemsSource="{Binding Details}">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Item1}" Style="{StaticResource Subtle}"/><TextBlock Grid.Column="1" Text="{Binding Item2}" TextWrapping="Wrap"/></Grid>
+                        </DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Activate / manage" Style="{StaticResource SectionTitle}" Margin="0,16,0,6"/>
+                    <TextBlock Text="Licensing server" Style="{StaticResource Subtle}"/><TextBox Text="{Binding ServerUrl}"/>
+                    <TextBlock Text="Licence key" Style="{StaticResource Subtle}" Margin="0,6,0,0"/><TextBox Text="{Binding LicenseKey, UpdateSourceTrigger=PropertyChanged}" FontFamily="Consolas"/>
+                    <WrapPanel Margin="0,8,0,0">
+                        <Button Content="Activate online" Command="{Binding ActivateCommand}" Style="{StaticResource AccentButton}"/>
+                        <Button Content="Refresh licence" Command="{Binding RefreshOnlineCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Deactivate this device" Command="{Binding DeactivateCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Import licence file…" Command="{Binding ImportLicenseFileCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Export activation request…" Command="{Binding ExportActivationRequestCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Install evaluation licence" Command="{Binding InstallEvaluationCommand}" Style="{StaticResource FlatButton}"/>
+                    </WrapPanel>
+                    <TextBlock Text="Licences are verified offline with a digital signature. Project files are never deleted or locked when a licence expires: they remain accessible read-only." Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Licensed modules" Style="{StaticResource SectionTitle}"/>
+                    <DataGrid ItemsSource="{Binding Modules}">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Licensed" Binding="{Binding Licensed, Mode=OneWay}"/>
+                            <DataGridTextColumn Header="Module" Binding="{Binding Code}"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="Maturity" Binding="{Binding Maturity}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+        </ScrollViewer>
     </DataTemplate>
 
     <DataTemplate DataType="{x:Type vm:TextViewerViewModel}">

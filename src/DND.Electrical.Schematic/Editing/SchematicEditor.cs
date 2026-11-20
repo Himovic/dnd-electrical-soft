@@ -51,6 +51,7 @@ public sealed class SchematicEditor : CadEditor
     /// <summary>Places a symbol as one undoable step (creating its device when needed).</summary>
     public SymbolInstanceEntity InsertSymbol(SymbolDefinition def, Point2 position, double rotation = 0, bool mirrored = false, string? deviceTag = null, IDictionary<string, string>? values = null)
     {
+        if (IsReadOnly) throw new InvalidOperationException(ReadOnlyReason);
         Project.CacheSymbol(def, Schematic.Resolver.Libraries.FindLibraryOf(def.Id)?.Id ?? string.Empty);
         var inst = SchematicService.CreateInstance(def, position, rotation, mirrored);
         if (values is not null) foreach (var kv in values) inst.Values[kv.Key] = kv.Value;
@@ -93,6 +94,7 @@ public sealed class SchematicEditor : CadEditor
     /// <summary>Links an instance to another (existing or new) device tag, e.g. to make a contact belong to a coil.</summary>
     public void AssignDevice(SymbolInstanceEntity instance, string tag)
     {
+        if (RefuseIfReadOnly()) return;
         var device = Project.FindDeviceByTag(tag);
         using (Undo.BeginGroup($"Assign {tag}"))
         {
@@ -113,6 +115,7 @@ public sealed class SchematicEditor : CadEditor
     /// <summary>Renames a device (all its symbols follow) as an undoable step.</summary>
     public bool RenameDevice(Device device, string newTag)
     {
+        if (RefuseIfReadOnly()) return false;
         newTag = newTag.Trim();
         if (newTag.Length == 0 || string.Equals(device.Tag, newTag, StringComparison.Ordinal)) return false;
         if (Project.FindDeviceByTag(newTag) is { } other && other != device) return false;
@@ -126,6 +129,7 @@ public sealed class SchematicEditor : CadEditor
 
     public WireNumberingResult NumberWires(bool renumberExisting)
     {
+        if (IsReadOnly) throw new InvalidOperationException(ReadOnlyReason);
         var graph = BuildConnectivity();
         var wires = Project.WireEntities().Select(x => x.wire).ToList();
         var before = wires.ToDictionary(w => w.Id, w => w.WireNumber);
@@ -140,6 +144,7 @@ public sealed class SchematicEditor : CadEditor
 
     public IReadOnlyList<(string oldTag, string newTag)> RenumberDevices()
     {
+        if (IsReadOnly) throw new InvalidOperationException(ReadOnlyReason);
         var before = Project.Devices.ToDictionary(d => d, d => d.Tag);
         var changes = DeviceTaggingService.RenumberAll(Project);
         var after = Project.Devices.ToDictionary(d => d, d => d.Tag);
@@ -172,6 +177,7 @@ public sealed class SchematicEditor : CadEditor
     /// <summary>Splits a wire and inserts a junction as an undoable step. Returns the junction.</summary>
     public JunctionEntity SplitWireWithJunction(WireEntity wire, Point2 at)
     {
+        if (IsReadOnly) throw new InvalidOperationException(ReadOnlyReason);
         var (first, second, junction) = SchematicService.PrepareSplit(wire, at);
         var before = wire.Clone(keepId: true);
         Undo.Execute(new DelegateAction("Add junction",
