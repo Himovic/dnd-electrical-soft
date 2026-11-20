@@ -1033,6 +1033,13 @@ public sealed partial class MainViewModel : ObservableObject
             _s.Dialogs.Show(new ProjectManagementViewModel(Session!.Project, () => Session.MarkDirty(), _s.Dialogs, _s.Settings.UserName));
     }
 
+    [RelayCommand(CanExecute = nameof(IsProjectOpen))]
+    private void OpenPowerStudio()
+    {
+        if (Require(DND.Electrical.Licensing.EngineeringModule.POWER))
+            _s.Dialogs.Show(new PowerStudioViewModel(Session!.Project, _s.Licensing, _s.Dialogs, () => Session.MarkDirty()));
+    }
+
     /// <summary>3D layout window; focuses the engineering object selected in the schematic, if any.</summary>
     [RelayCommand(CanExecute = nameof(IsProjectOpen))]
     private void Open3D()
@@ -1138,7 +1145,7 @@ public sealed partial class MainViewModel : ObservableObject
         new("Zoom extents", "View", "F", ZoomExtentsCommand), new("Toggle theme", "View", "", ToggleThemeCommand),
         new("Number wires", "Engineering", "", NumberWiresCommand), new("Renumber devices", "Engineering", "", RenumberDevicesCommand),
         new("Synchronise terminal strips", "Engineering", "", SyncTerminalsCommand), new("Validate project", "Engineering", "F8", ValidateCommand),
-        new("Engineering data (BOM, cables, PLC, cabinets)", "Engineering", "", OpenEngineeringDataCommand), new("Calculations", "Calculation", "", OpenCalculationsCommand), new("Project management (tasks, issues, approvals, engineering objects)", "Project", "", OpenProjectManagementCommand), new("3D layout (cabinet 3D, trays, clashes, glTF export)", "3D", "", Open3DCommand),
+        new("Engineering data (BOM, cables, PLC, cabinets)", "Engineering", "", OpenEngineeringDataCommand), new("Calculations", "Calculation", "", OpenCalculationsCommand), new("Project management (tasks, issues, approvals, engineering objects)", "Project", "", OpenProjectManagementCommand), new("3D layout (cabinet 3D, trays, clashes, glTF export)", "3D", "", Open3DCommand), new("D&D PowerStudio (load flow, short circuit, protection, harmonics)", "Power", "", OpenPowerStudioCommand),
         new("Drawing set PDF", "Reports", "", ExportDrawingsPdfCommand), new("Reports…", "Reports", "", ExportReportsCommand), new("Handover package", "Reports", "", HandoverPackageCommand),
         new("Export sheet DXF", "Reports", "", ExportSheetCommand, "dxf"), new("Export sheet SVG", "Reports", "", ExportSheetCommand, "svg"), new("Export sheet PNG", "Reports", "", ExportSheetCommand, "png"),
         new("Export project JSON", "Reports", "", ExportDataCommand, "json"), new("Export engineering XML", "Reports", "", ExportDataCommand, "xml"),

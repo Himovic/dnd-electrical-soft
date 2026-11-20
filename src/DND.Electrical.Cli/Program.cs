@@ -100,6 +100,8 @@ public static class Program
                     foreach (var s in library.Search(Opt(args, "--search")))
                         Console.WriteLine($"{s.Id,-22} {s.Category,-15} {s.Role,-15} {s.Name}");
                     return 0;
+                case "power":
+                    return await Power(args, store, new PowerStudioService(licensing));
                 case "model3d":
                     return await Model3D(args, store, new ThreeDService(licensing));
                 case "calc":
@@ -197,6 +199,57 @@ public static class Program
         return 0;
     }
 
+    /// <summary>
+    /// power &lt;network.json | project.dndx | sample:ieee14 | sample:demo&gt; [--study lf|sc|prot|harm|all] [--out report.txt] [--tcc chart.svg] [--save-network file.json]
+    /// </summary>
+    private static async Task<int> Power(string[] args, SqliteProjectStore store, PowerStudioService svc)
+    {
+        if (args.Length < 2) throw new ArgumentException("Usage: power <network.json|project.dndx|sample:ieee14|sample:demo> [--study lf|sc|prot|harm|all]");
+        var src = args[1];
+        DND.Electrical.Power.PowerNetwork n = src switch
+        {
+            "sample:ieee14" => DND.Electrical.Power.SampleNetworks.Ieee14(),
+            "sample:demo" => DND.Electrical.Power.SampleNetworks.DemoIndustrial(),
+            _ when src.EndsWith(ProductInfo.ProjectFileExtension, StringComparison.OrdinalIgnoreCase) =>
+                (await store.LoadAsync(src)).PowerNetworks.FirstOrDefault() is { } doc ? PowerStudioService.Load(doc) : throw new ArgumentException("The project contains no PowerStudio network."),
+            _ => DND.Electrical.Power.PowerNetwork.FromJson(File.ReadAllText(src)),
+        };
+        if (Opt(args, "--save-network") is { } save) { File.WriteAllText(save, n.ToJson()); Console.WriteLine($"Network written: {save}"); }
+        var study = Opt(args, "--study") ?? "all";
+        var report = new System.Text.StringBuilder();
+        var exit = 0;
+        DND.Electrical.Power.ShortCircuitResult? sc = null;
+        if (study is "lf" or "all")
+        {
+            var lf = svc.LoadFlow(n);
+            report.AppendLine(PowerStudioService.LoadFlowReport(n, lf));
+            if (!lf.Converged) exit = 1;
+        }
+        if (study is "sc" or "prot" or "all")
+        {
+            sc = svc.ShortCircuit(n);
+            if (study != "prot") report.AppendLine(PowerStudioService.ShortCircuitReport(n, sc));
+        }
+        if (study is "prot" or "all" && n.Protection.Count > 0)
+        {
+            report.AppendLine("D&D PowerStudio – Protection coordination");
+            foreach (var f in svc.Coordination(n, sc!)) report.AppendLine((f.Selective ? "  ✔ " : "  ✖ ") + f.Message);
+            report.AppendLine();
+            if (Opt(args, "--tcc") is { } tcc) { File.WriteAllText(tcc, DND.Electrical.Power.ProtectionStudy.TccSvg(n, sc)); Console.WriteLine($"Time-current chart written: {tcc}"); }
+        }
+        if (study is "harm" or "all")
+        {
+            var h = svc.Harmonics(n);
+            report.AppendLine("D&D PowerStudio – Harmonic frequency scan");
+            foreach (var r in h.Resonances) report.AppendLine(FormattableString.Invariant($"  Resonance at bus {r.Bus}: h = {r.Order:0.0}, |Z| = {r.ZOhm:0.####} Ω"));
+            foreach (var d in h.Distortion) report.AppendLine(FormattableString.Invariant($"  Bus {d.Bus}: THDv = {d.ThdPercent:0.##} %"));
+            report.AppendLine();
+        }
+        if (Opt(args, "--out") is { } output) { File.WriteAllText(output, report.ToString()); Console.WriteLine($"Report written: {output}"); }
+        else Console.Write(report.ToString());
+        return exit;
+    }
+
     /// <summary>model3d &lt;project&gt; [--cabinet TAG] [--out file.glb|.gltf|.stl] [--save]: generates the 3D cabinet model, checks clashes and exports.</summary>
     private static async Task<int> Model3D(string[] args, SqliteProjectStore store, ThreeDService svc)
     {
@@ -266,6 +319,7 @@ public static class Program
                                    [--out <path>] [--sheet <n>] [--reports bom,wires,...] [--lang en|fr]
               dnd-electrical archive <project.dndx> <package.dndpkg>
               dnd-electrical import <package.dndpkg> <project.dndx>
+              dnd-electrical power <network.json|project.dndx|sample:ieee14|sample:demo> [--study lf|sc|prot|harm|all] [--out <report.txt>] [--tcc <chart.svg>]
               dnd-electrical model3d <project.dndx> [--cabinet <tag>] [--out <file.glb|.gltf|.stl>] [--save]
               dnd-electrical symbols [--search <text>] | symbols export <file.json>
               dnd-electrical calc current|power|voltage-drop|cable|short-circuit|transformer|motor [options]

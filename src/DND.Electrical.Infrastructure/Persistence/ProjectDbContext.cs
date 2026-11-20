@@ -100,6 +100,7 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
             Children(e, x => x.Maintenance);
             Children(e, x => x.Commissioning);
             Children(e, x => x.Layouts3D);
+            Children(e, x => x.PowerNetworks);
             e.OwnsMany(x => x.Symbols, s =>
             {
                 s.ToTable("ProjectSymbols");
@@ -213,6 +214,7 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
         b.Entity<CommentRecord>(e => { e.ToTable("Comments"); e.HasIndex(x => x.TargetId); });
         b.Entity<DocumentRegisterEntry>(e => e.ToTable("DocumentRegister"));
         b.Entity<MaintenanceRecord>(e => { e.ToTable("MaintenanceRecords"); e.HasIndex(x => x.ObjectId); });
+        b.Entity<PowerNetworkDocument>(e => { e.ToTable("PowerNetworks"); e.Property(x => x.Name).HasMaxLength(200); });
         b.Entity<Layout3DDocument>(e => { e.ToTable("Layouts3D"); e.Property(x => x.Name).HasMaxLength(200); e.Property(x => x.Kind).HasMaxLength(40); });
         b.Entity<CommissioningRecord>(e => { e.ToTable("CommissioningRecords"); e.Property(x => x.Result).HasConversion<string>().HasMaxLength(30); e.HasIndex(x => x.ObjectId); });
         b.Entity<ConnectionRecord>(e => { e.ToTable("Connections"); e.HasIndex(x => x.WireNumber); e.HasIndex(x => x.ProjectId); });

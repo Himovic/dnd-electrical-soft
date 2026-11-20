@@ -473,3 +473,80 @@ public class ThreeDWorkflowTests
         Assert.DoesNotContain(h.Dialogs.Shown, v => v is ThreeDViewModel);
     }
 }
+
+public class PowerStudioWorkflowTests
+{
+    [Fact]
+    public async Task PowerStudio_runs_all_studies_on_the_demo_network_and_exports()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-PWR-003");
+        h.Main.OpenPowerStudioCommand.Execute(null);
+        var vm = Assert.IsType<PowerStudioViewModel>(h.Dialogs.Shown.Last());
+        vm.LoadDemoNetworkCommand.Execute(null);
+        Assert.Single(h.Main.Session!.Project.PowerNetworks);
+        vm.RunLoadFlowCommand.Execute(null);
+        Assert.Contains("converged", vm.Status);
+        Assert.Equal(5, vm.BusResults.Count);
+        vm.RunShortCircuitCommand.Execute(null);
+        Assert.Equal(5, vm.FaultResults.Count);
+        Assert.Contains("IEC 60909", vm.Report);
+        vm.RunCoordinationCommand.Execute(null);
+        Assert.NotEmpty(vm.TccCurves);
+        Assert.Contains(vm.Findings, f => f.Contains("selectivity tables"));
+        vm.RunHarmonicsCommand.Execute(null);
+        Assert.Contains(vm.HarmonicLines, l => l.Contains("THDv"));
+
+        var tcc = h.PathFor("tcc.svg");
+        h.Dialogs.SavePaths.Enqueue(tcc);
+        vm.ExportTccCommand.Execute(null);
+        Assert.StartsWith("<svg", File.ReadAllText(tcc));
+    }
+
+    [Fact]
+    public async Task Edited_data_is_validated_and_stored_before_a_study()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-PWR-003");
+        h.Main.OpenPowerStudioCommand.Execute(null);
+        var vm = Assert.IsType<PowerStudioViewModel>(h.Dialogs.Shown.Last());
+        h.Dialogs.Prompts.Enqueue("My network");
+        vm.NewNetworkCommand.Execute(null);
+        vm.AddElementCommand.Execute("bus");
+        vm.Loads.Add(new DND.Electrical.Power.Load { Id = "X", Bus = "NOPE", PMw = 1 });
+        vm.RunLoadFlowCommand.Execute(null);
+        Assert.Contains(vm.Findings, f => f.Contains("unknown bus 'NOPE'"));
+        vm.SelectedElement = vm.Loads.Single();
+        vm.DeleteSelectedCommand.Execute(null);
+        vm.Transformers.Add(new DND.Electrical.Power.Transformer { Id = "T1", HvBus = "MV", LvBus = vm.Buses.Last().Id, SnMva = 0.4, UkPercent = 4, PcuKw = 4.6 });
+        vm.Loads.Add(new DND.Electrical.Power.Load { Id = "L", Bus = vm.Buses.Last().Id, PMw = 0.2, QMvar = 0.1 });
+        vm.RunLoadFlowCommand.Execute(null);
+        Assert.Contains("converged", vm.Status);
+        var stored = DND.Electrical.Application.Services.PowerStudioService.Load(h.Main.Session!.Project.PowerNetworks.Single());
+        Assert.Equal("My network", stored.Name);
+        Assert.Single(stored.Transformers);
+    }
+
+    [Fact]
+    public async Task New_calculators_are_available_and_power_ones_are_gated()
+    {
+        using var h = new UiHarness();
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-PWR-003");
+        var calc = new CalculationsViewModel(h.Main.Session!.Project, () => { }, limited);
+        calc.Selected = calc.Calculators.First(c => c.Id == "lighting");
+        calc.CalculateCommand.Execute(null);
+        Assert.Contains("luminaires", calc.Report);
+        calc.Selected = calc.Calculators.First(c => c.Id == "pfc");
+        calc.CalculateCommand.Execute(null);
+        Assert.Empty(calc.Report);
+        Assert.NotEmpty(calc.Error);
+        var full = new CalculationsViewModel(h.Main.Session.Project, () => { }, h.Licensing);
+        full.Selected = full.Calculators.First(c => c.Id == "pfc");
+        full.CalculateCommand.Execute(null);
+        Assert.Contains("Qc", full.Report);
+
+        h.Main.OpenPowerStudioCommand.Execute(null);
+        Assert.IsType<PowerStudioViewModel>(h.Dialogs.Shown.Last());
+    }
+}

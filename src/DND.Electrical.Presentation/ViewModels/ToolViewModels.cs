@@ -191,7 +191,7 @@ public sealed partial class CalculationsViewModel : ObservableObject
     private readonly DND.Electrical.Licensing.IEntitlements _entitlements;
 
     /// <summary>Calculators belonging to D&amp;D PowerStudio (POWER module); the others are part of ELEC.</summary>
-    public static readonly IReadOnlySet<string> PowerStudioCalculators = new HashSet<string> { "sc", "tr", "motor", "loads", "balance" };
+    public static readonly IReadOnlySet<string> PowerStudioCalculators = new HashSet<string> { "sc", "tr", "motor", "loads", "balance", "pfc", "gen", "earth-rod", "earth-grid", "touch-step" };
 
     public CalculationsViewModel(ElectricalProject project, Action changed, DND.Electrical.Licensing.IEntitlements entitlements)
     {
@@ -225,6 +225,18 @@ public sealed partial class CalculationsViewModel : ObservableObject
             new("loads", "Project load summary", "From the project load list and motors", new[] { F("u", "System voltage", v, "V"), F("ks", "Simultaneity", "0.9") },
                 (d, _) => LoadCalculator.Summarize(project.Loads.Select(l => new LoadItem(l.Description, l.PowerKw, l.PowerFactor, l.DemandFactor, Category: l.Category.ToString()))
                     .Concat(project.Motors.Select(m => new LoadItem(m.Tag, m.PowerKw / Math.Max(0.1, m.Efficiency), m.PowerFactor, 1, Category: "Motor"))).ToList(), d("u"), d("ks"))),
+            new("pfc", "Power factor correction", "Qc = P·(tan φ1 − tan φ2), resonance h = √(Sk/Qc)", new[] { F("p", "Active power", "250", "kW"), F("pf1", "Actual cos φ", "0.78"), F("pf2", "Target cos φ", "0.95"), F("u", "Voltage", v, "V"), F("sk", "Sk at bank (0 = skip)", "20", "MVA") },
+                (d, _) => PowerFactorCorrectionCalculator.Calculate(d("p"), d("pf1"), d("pf2"), d("u"), d("sk") > 0 ? d("sk") : null)),
+            new("gen", "Generator sizing", "Running load and motor-start voltage dip (preliminary)", new[] { F("p", "Running load", "300", "kW"), F("pf", "cos φ", "0.8"), F("lf", "Max loading", "80", "%"), F("m", "Largest motor", "45", "kW"), F("k", "Starting kVA per kW", "6"), F("xd", "x\"d (manufacturer)", "0.15", "pu"), F("dip", "Allowed dip", "15", "%") },
+                (d, _) => GeneratorSizingCalculator.Calculate(d("p"), d("pf"), d("lf"), d("m"), d("k"), d("xd"), d("dip"))),
+            new("earth-rod", "Earth rod resistance", "Dwight formula", new[] { F("rho", "Soil resistivity", "100", "Ω·m"), F("l", "Rod length", "3", "m"), F("d", "Rod diameter", "16", "mm"), F("n", "Number of rods", "1"), F("s", "Spacing", "6", "m") },
+                (d, _) => EarthingCalculator.Rod(d("rho"), d("l"), d("d"), (int)d("n"), d("s"))),
+            new("earth-grid", "Earthing grid resistance", "IEEE Std 80 (Sverak)", new[] { F("rho", "Soil resistivity", "400", "Ω·m"), F("a", "Grid area", "4900", "m²"), F("lt", "Total buried length", "1540", "m"), F("h", "Depth", "0.5", "m") },
+                (d, _) => EarthingCalculator.Grid(d("rho"), d("a"), d("lt"), d("h"))),
+            new("touch-step", "Tolerable touch and step voltage", "IEEE Std 80", new[] { F("rho", "Soil resistivity", "400", "Ω·m"), F("rhos", "Surface layer resistivity", "2500", "Ω·m"), F("hs", "Surface layer thickness", "0.102", "m"), F("ts", "Fault duration", "0.5", "s"), F("kg", "Body weight", "70", "kg", "50", "70"), F("gpr", "GPR (0 = skip)", "0", "V") },
+                (d, _) => EarthingCalculator.TolerableVoltages(d("rho"), d("rhos"), d("hs"), d("ts"), d("kg"), d("gpr") > 0 ? d("gpr") : null)),
+            new("lighting", "Lighting (lumen method)", "N = E·A/(Φ·UF·MF)", new[] { F("l", "Room length", "20", "m"), F("w", "Room width", "10", "m"), F("hm", "Mounting height above work plane", "2.2", "m"), F("e", "Target illuminance", "500", "lx"), F("phi", "Flux per luminaire", "4000", "lm"), F("uf", "Utilisation factor (photometric data)", "0.6"), F("mf", "Maintenance factor", "0.8") },
+                (d, _) => LightingCalculator.Calculate(d("l"), d("w"), d("hm"), d("e"), d("phi"), d("uf"), d("mf"))),
             new("balance", "Phase balancing", "Single-phase loads of the project", Array.Empty<CalcField>(),
                 (_, _) => LoadBalancingCalculator.Balance(project.Loads.Select(l => new LoadItem(l.Description, l.PowerKw, l.PowerFactor, l.DemandFactor, l.Phase == PhaseAssignment.ThreePhase ? "3P" : "1P")).ToList()).result),
         };

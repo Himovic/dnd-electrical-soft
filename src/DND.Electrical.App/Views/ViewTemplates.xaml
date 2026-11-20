@@ -427,6 +427,107 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== D&D PowerStudio ============================== -->
+    <DataTemplate DataType="{x:Type vm:PowerStudioViewModel}">
+        <DockPanel Margin="6">
+            <WrapPanel DockPanel.Dock="Top" Margin="2">
+                <TextBlock Text="Network:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Documents}" SelectedItem="{Binding SelectedDocument}" DisplayMemberPath="Name" Width="220"/>
+                <Button Content="New…" Command="{Binding NewNetworkCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Build from project…" Command="{Binding BuildFromProjectCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Demo network" Command="{Binding LoadDemoNetworkCommand}" Style="{StaticResource FlatButton}" ToolTip="Fictional industrial network for demonstration"/>
+                <Button Content="IEEE 14-bus" Command="{Binding LoadIeee14Command}" Style="{StaticResource FlatButton}" ToolTip="Public benchmark used for validation"/>
+                <Button Content="Import…" Command="{Binding ImportJsonCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Export…" Command="{Binding ExportJsonCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Delete selected element" Command="{Binding DeleteSelectedCommand}" Style="{StaticResource FlatButton}"/>
+            </WrapPanel>
+            <WrapPanel DockPanel.Dock="Top" Margin="2">
+                <Button Content="Load flow" Command="{Binding RunLoadFlowCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Short circuit (IEC 60909)" Command="{Binding RunShortCircuitCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Protection coordination" Command="{Binding RunCoordinationCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Harmonic scan" Command="{Binding RunHarmonicsCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Export report…" Command="{Binding ExportReportCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Export TCC (SVG)…" Command="{Binding ExportTccCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource Subtle}"/>
+            </WrapPanel>
+            <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Findings}" Height="120" Margin="0,6,0,0"/>
+            <TabControl>
+                    <TabItem Header="Buses">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="bus" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Buses}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Utility feeders">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="grid" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Grids}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Transformers">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="transformer" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Transformers}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Lines / cables">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="line" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Loads">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="load" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Loads}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Generators">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="generator" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Generators}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Shunts / PFC">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="shunt" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Shunts}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                    <TabItem Header="Protection devices">
+                        <DockPanel><Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add" Command="{Binding AddElementCommand}" CommandParameter="protection" Style="{StaticResource FlatButton}"/>
+                            <DataGrid ItemsSource="{Binding Protection}" SelectedItem="{Binding SelectedElement}" AutoGenerateColumns="True" CanUserAddRows="False"/></DockPanel>
+                    </TabItem>
+                <TabItem Header="Load flow results">
+                    <Grid><Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                        <DataGrid ItemsSource="{Binding BusResults}" AutoGenerateColumns="True" IsReadOnly="True"/>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding BranchResults}" AutoGenerateColumns="True" IsReadOnly="True" Margin="0,6,0,0"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Short-circuit results">
+                    <DataGrid ItemsSource="{Binding FaultResults}" AutoGenerateColumns="True" IsReadOnly="True"/>
+                </TabItem>
+                <TabItem Header="Time-current chart">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Margin="8" Width="660" Height="440" HorizontalAlignment="Left">
+                            <Grid Margin="10">
+                                <ItemsControl ItemsSource="{Binding TccMarkers}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemContainerStyle><Style TargetType="ContentPresenter"><Setter Property="Canvas.Left" Value="{Binding X}"/></Style></ItemsControl.ItemContainerStyle>
+                                    <ItemsControl.ItemTemplate><DataTemplate><Grid><Line Y1="0" Y2="420" Stroke="#111827" StrokeDashArray="2 3"/><TextBlock Text="{Binding Label}" FontSize="10" Margin="3,400,0,0"/></Grid></DataTemplate></ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ItemsControl ItemsSource="{Binding TccCurves}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Polyline Points="{Binding Points}" Stroke="{Binding Color}" StrokeThickness="2" ToolTip="{Binding Name}">
+                                                <Polyline.Style><Style TargetType="Polyline"><Style.Triggers><DataTrigger Binding="{Binding Dashed}" Value="True"><Setter Property="StrokeDashArray" Value="4 3"/><Setter Property="StrokeThickness" Value="1"/></DataTrigger></Style.Triggers></Style></Polyline.Style>
+                                            </Polyline>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock VerticalAlignment="Top" HorizontalAlignment="Right" FontSize="10" Foreground="#475569" Text="log–log · 0.005 s … 10 000 s · solid = maximum, dashed = minimum trip time"/>
+                            </Grid>
+                        </Border>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="Harmonics">
+                    <ListBox ItemsSource="{Binding HarmonicLines}"/>
+                </TabItem>
+                <TabItem Header="Report">
+                    <TextBox Text="{Binding Report, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== 3D layout ============================== -->
     <DataTemplate DataType="{x:Type vm:ThreeDViewModel}">
         <DockPanel Margin="6">

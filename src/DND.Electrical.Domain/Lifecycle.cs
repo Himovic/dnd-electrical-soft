@@ -140,3 +140,12 @@ public sealed class Layout3DDocument
     public string SceneJson { get; set; } = "{}";
     public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
 }
+
+/// <summary>Stored D&amp;D PowerStudio network (serialised by the POWER module) with the time of the last study.</summary>
+public sealed class PowerNetworkDocument
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = "Network";
+    public string NetworkJson { get; set; } = "{}";
+    public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
+}

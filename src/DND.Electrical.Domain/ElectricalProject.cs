@@ -47,6 +47,7 @@ public sealed class ElectricalProject
     public List<MaintenanceRecord> Maintenance { get; set; } = new();
     public List<CommissioningRecord> Commissioning { get; set; } = new();
     public List<Layout3DDocument> Layouts3D { get; set; } = new();
+    public List<PowerNetworkDocument> PowerNetworks { get; set; } = new();
 
     // ------------------------------------------------------------------ lookups
 

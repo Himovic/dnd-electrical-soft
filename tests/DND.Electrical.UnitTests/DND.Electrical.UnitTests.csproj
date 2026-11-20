@@ -18,6 +18,7 @@
     <ProjectReference Include="../../src/DND.Electrical.Rendering/DND.Electrical.Rendering.csproj" />
     <ProjectReference Include="../../src/DND.Electrical.Calculations/DND.Electrical.Calculations.csproj" />
     <ProjectReference Include="../../src/DND.Electrical.ThreeD/DND.Electrical.ThreeD.csproj" />
+    <ProjectReference Include="../../src/DND.Electrical.Power/DND.Electrical.Power.csproj" />
     <ProjectReference Include="../../src/DND.Electrical.Wiring/DND.Electrical.Wiring.csproj" />
     <ProjectReference Include="../../src/DND.Electrical.PLC/DND.Electrical.PLC.csproj" />
     <ProjectReference Include="../../src/DND.Electrical.Panel/DND.Electrical.Panel.csproj" />
