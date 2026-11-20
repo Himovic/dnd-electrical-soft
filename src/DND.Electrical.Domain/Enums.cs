@@ -5,7 +5,7 @@ public enum ProjectStatus { Draft, InProgress, ForReview, Approved, ForConstruct
 public enum ProjectIndustry
 {
     General, Industrial, Manufacturing, OilAndGas, WaterTreatment, PowerDistribution,
-    Building, Hvac, Automation, RenewableEnergy,
+    Building, Hvac, Automation, RenewableEnergy, Railway, DataCenter, SolarPv,
 }
 
 public enum SheetKind { Cover, Schematic, Power, Control, Plc, Terminal, Cabinet, Single_Line, Notes }

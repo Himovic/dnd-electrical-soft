@@ -21,7 +21,7 @@ public sealed record DemoProjectInfo(string Number, string Name, string Descript
 /// Generates the bundled demonstration projects. All data (customers, products, prices) is fictional and
 /// flagged as such; projects are marked <see cref="ProjectInfo.IsDemo"/> and title blocks show a banner.
 /// </summary>
-public sealed class DemoProjectFactory(SchematicService schematic)
+public sealed partial class DemoProjectFactory(SchematicService schematic)
 {
     public static readonly IReadOnlyList<DemoProjectInfo> Catalogue = new[]
     {
@@ -30,6 +30,11 @@ public sealed class DemoProjectFactory(SchematicService schematic)
         new DemoProjectInfo("DEMO-PWR-003", "Electrical Distribution", "1000 kVA transformer, main distribution board and outgoing feeders with sizing calculations.", ProjectIndustry.PowerDistribution),
         new DemoProjectInfo("DEMO-CAB-004", "Control Cabinet", "Motor control cabinet with three starters, PLC and complete mounting-plate layout.", ProjectIndustry.Manufacturing),
         new DemoProjectInfo("DEMO-BLD-005", "Building Electrical Installation", "Residential/commercial distribution board with lighting and socket circuits.", ProjectIndustry.Building),
+        new DemoProjectInfo("DEMO-MFG-006", "Manufacturing – Packaging Line", "Packaging line: motor feeders, PLC, sealing temperature loop, alarms, HMI/SCADA network and project lifecycle.", ProjectIndustry.Manufacturing),
+        new DemoProjectInfo("DEMO-RAIL-007", "Railway – Station Auxiliary Power", "Station LV distribution with dual transformers, signalling UPS supplies, platform lighting and SCADA/RTU interfaces.", ProjectIndustry.Railway),
+        new DemoProjectInfo("DEMO-DC-008", "Data Center – 2N Data Hall", "Data hall with 2N UPS topology, PDUs, cooling, redundancy/autonomy/PUE calculations and EPMS network.", ProjectIndustry.DataCenter),
+        new DemoProjectInfo("DEMO-OG-009", "Oil & Gas – Gas Compression Skid", "Compressor skid MCC, instrumentation in hazardous areas, control loops, alarms and an ESD cause and effect matrix.", ProjectIndustry.OilAndGas),
+        new DemoProjectInfo("DEMO-PV-010", "Solar – 2.5 MWp PV Plant", "Ground-mounted PV plant: string sizing, inverter AC collection, grid connection study and plant SCADA.", ProjectIndustry.SolarPv),
     };
 
     public ElectricalProject Create(string number) => number switch
@@ -39,6 +44,11 @@ public sealed class DemoProjectFactory(SchematicService schematic)
         "DEMO-PWR-003" => ElectricalDistribution(),
         "DEMO-CAB-004" => ControlCabinet(),
         "DEMO-BLD-005" => BuildingInstallation(),
+        "DEMO-MFG-006" => Manufacturing(),
+        "DEMO-RAIL-007" => Railway(),
+        "DEMO-DC-008" => DataCenter(),
+        "DEMO-OG-009" => OilAndGas(),
+        "DEMO-PV-010" => SolarPlant(),
         _ => throw new ArgumentException($"Unknown demo project '{number}'."),
     };
 

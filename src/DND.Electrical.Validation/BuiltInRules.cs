@@ -149,6 +149,64 @@ public static class BuiltInRules
                 c.Project.SymbolInstances().Where(x => x.instance.Definition is null)
                     .Select(x => r.Issue($"Symbol '{x.instance.SymbolId}' not found in the project or libraries.", "Import the symbol library or replace the symbol.", x.sheet, x.instance.Id, c.Loc(x.sheet, x.instance.Position)))),
 
+        new DelegateRule("AUT001", "Instrument data", "Automation", Severity.Error,
+            "Instrument tags must be unique; analog instruments need a valid range and unit.", (c, r) =>
+                c.Project.Instruments.GroupBy(i => i.Tag, StringComparer.OrdinalIgnoreCase).Where(g => g.Key.Length > 0 && g.Count() > 1)
+                    .Select(g => r.Issue($"Instrument tag {g.Key} is used {g.Count()} times.", "Rename the instruments.", obj: g.Key))
+                .Concat(c.Project.Instruments.Where(i => string.IsNullOrWhiteSpace(i.Tag)).Select(i => r.Issue($"Instrument '{i.Description}' has no tag.", "Enter an ISA-5.1 style tag (e.g. PT-101).")))
+                .Concat(c.Project.Instruments.Where(i => i.IsAnalog && (i.RangeMax <= i.RangeMin || string.IsNullOrWhiteSpace(i.Unit)))
+                    .Select(i => r.Issue($"Instrument {i.Tag}: range {i.RangeMin}…{i.RangeMax} {i.Unit} is incomplete or inverted.", "Enter the calibrated range and engineering unit.", obj: i.Tag)))),
+
+        new DelegateRule("AUT002", "Alarm limits", "Automation", Severity.Error,
+            "Analog alarm set points must lie within the instrument range and keep the order LL < L < H < HH.", (c, r) => AlarmLimits(c, r)),
+
+        new DelegateRule("AUT003", "Instrument I/O assignment", "Automation", Severity.Warning,
+            "Instruments with an I/O signal should be assigned to a PLC channel of a compatible kind.", (c, r) =>
+            {
+                var channels = c.Project.PlcStations.SelectMany(s => s.Channels).ToDictionary(ch => ch.Id);
+                return c.Project.Instruments.Where(i => i.Signal != InstrumentSignal.Fieldbus).SelectMany(i =>
+                {
+                    if (i.PlcChannelId is not { } id) return new[] { r.Issue($"Instrument {i.Tag} is not assigned to a PLC channel.", "Assign a spare channel in Automation → Instruments.", obj: i.Tag, severity: Severity.Information) };
+                    if (!channels.TryGetValue(id, out var ch)) return new[] { r.Issue($"Instrument {i.Tag} references a deleted PLC channel.", "Reassign the instrument.", obj: i.Tag, severity: Severity.Error) };
+                    var analogChannel = ch.Kind is PlcSignalKind.AnalogInput or PlcSignalKind.AnalogOutput;
+                    var output = i.Function is InstrumentFunction.ControlValve or InstrumentFunction.OnOffValve or InstrumentFunction.Actuator;
+                    var outputChannel = ch.Kind is PlcSignalKind.DigitalOutput or PlcSignalKind.AnalogOutput;
+                    var issues = new List<ValidationIssue>();
+                    if (analogChannel != i.IsAnalog) issues.Add(r.Issue($"Instrument {i.Tag} ({i.Signal}) is wired to {ch.Kind} {ch.Address}.", "Use a channel of matching signal type.", obj: i.Tag, severity: Severity.Error));
+                    if (output != outputChannel) issues.Add(r.Issue($"Instrument {i.Tag} ({i.Function}) is wired to {ch.Kind} {ch.Address}: direction mismatch.", "Use an output channel for final elements and an input channel for measurements.", obj: i.Tag, severity: Severity.Error));
+                    return issues.ToArray();
+                });
+            }),
+
+        new DelegateRule("AUT004", "Control loop completeness", "Automation", Severity.Warning,
+            "Control loops need a measurement and (except monitoring loops) a final element.", (c, r) =>
+                c.Project.Loops.SelectMany(l =>
+                {
+                    var issues = new List<ValidationIssue>();
+                    if (l.MeasurementId is not { } m || c.Project.Instruments.All(i => i.Id != m)) issues.Add(r.Issue($"Loop {l.Tag} has no valid measurement instrument.", "Select the transmitter of the loop.", obj: l.Tag));
+                    if (l.Type != LoopType.Monitoring && l.FinalElementId is null && l.FinalDeviceId is null) issues.Add(r.Issue($"Loop {l.Tag} ({l.Type}) has no final element.", "Select the valve, drive or motor controlled by the loop.", obj: l.Tag));
+                    if (l.FinalDeviceId is { } d && c.Project.FindDevice(d) is null) issues.Add(r.Issue($"Loop {l.Tag} references a deleted device.", "Reassign the final element.", obj: l.Tag, severity: Severity.Error));
+                    return issues;
+                })),
+
+        new DelegateRule("AUT005", "Cause and effect references", "Automation", Severity.Error,
+            "Cause and effect matrices must reference existing devices, instruments and causes/effects.", (c, r) =>
+                c.Project.CauseEffects.SelectMany(m =>
+                    m.Effects.Where(e => e.DeviceId is { } d && c.Project.FindDevice(d) is null).Select(e => r.Issue($"{m.Name}: effect {e.Tag} references a deleted device.", "Reassign the effect.", obj: e.Tag))
+                    .Concat(m.Causes.Where(x => x.InstrumentId is { } i && c.Project.Instruments.All(n => n.Id != i)).Select(x => r.Issue($"{m.Name}: cause {x.Tag} references a deleted instrument.", "Reassign the cause.", obj: x.Tag)))
+                    .Concat(m.Links.Where(l => m.Causes.All(x => x.Id != l.CauseId) || m.Effects.All(e => e.Id != l.EffectId)).Select(_ => r.Issue($"{m.Name}: matrix mark without cause or effect.", "Remove the orphan mark.")))
+                    .Concat(m.Causes.Where(x => m.Links.All(l => l.CauseId != x.Id)).Select(x => r.Issue($"{m.Name}: cause {x.Tag} has no effect.", "Mark the effects of this cause or remove it.", obj: x.Tag, severity: Severity.Warning))))),
+
+        new DelegateRule("AUT006", "Control network addressing", "Automation", Severity.Error,
+            "SCADA/control network nodes need valid, unique IPv4 addresses per network and an acyclic topology.", (c, r) => ScadaChecks(c, r)),
+
+        new DelegateRule("AUT007", "Hazardous-area equipment records", "Automation", Severity.Warning,
+            "Equipment located in a hazardous zone must have its Ex marking recorded (from the equipment certificate).", (c, r) =>
+                c.Project.Instruments.Where(i => i.HazardousZone.Length > 0 && !i.HazardousZone.Equals("Safe area", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(i.ExMarking))
+                    .Select(i => r.Issue($"Instrument {i.Tag} is in {i.HazardousZone} but has no Ex marking recorded.", "Record the Ex marking from the certificate; the software does not verify suitability.", obj: i.Tag))
+                .Concat(c.Project.Devices.Where(d => d.GetProperty(DeviceProperties.HazardousZone) is { Length: > 0 } z && !z.Equals("Safe area", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(d.GetProperty(DeviceProperties.ExMarking)))
+                    .Select(d => r.Issue($"Device {d.Tag} is in {d.GetProperty(DeviceProperties.HazardousZone)} but has no Ex marking recorded.", "Record the Ex marking from the certificate.", obj: d.Tag)))),
+
         new DelegateRule("VAL022", "Demonstration catalogue data", "Procurement", Severity.Information,
             "Fictional demonstration products must be replaced before procurement.", (c, r) =>
                 c.Project.Catalog.Where(p => p.IsDemoData && c.Project.Devices.Any(d => string.Equals(d.PartNumber, p.PartNumber, StringComparison.OrdinalIgnoreCase)))
@@ -163,6 +221,55 @@ public static class BuiltInRules
     private static IEnumerable<(Sheet sheet, JunctionEntity junction)> UnusedJunctions(ValidationContext c) =>
         c.Project.OrderedSheets.SelectMany(s => s.Drawing.Entities.OfType<JunctionEntity>().Select(j => (s, j)))
             .Where(x => c.Graph.WireCountAtJunction(x.j.Id) == 0);
+
+    private static IEnumerable<ValidationIssue> AlarmLimits(ValidationContext c, DelegateRule r)
+    {
+        var byInstrument = c.Project.Instruments.ToDictionary(i => i.Id);
+        foreach (var a in c.Project.Alarms.Where(a => a.SetPoint is not null && a.InstrumentId is not null))
+            if (byInstrument.TryGetValue(a.InstrumentId!.Value, out var i) && i.IsAnalog && (a.SetPoint < i.RangeMin || a.SetPoint > i.RangeMax))
+                yield return r.Issue($"Alarm {a.Tag} set point {a.SetPoint} {a.Unit} is outside the range of {i.Tag} ({i.RangeMin}…{i.RangeMax} {i.Unit}).", "Correct the set point or the instrument range.", obj: a.Tag);
+        foreach (var g in c.Project.Alarms.Where(a => a.SetPoint is not null && a.InstrumentId is not null).GroupBy(a => a.InstrumentId))
+        {
+            double? Sp(AlarmType t) => g.FirstOrDefault(a => a.Type == t)?.SetPoint;
+            var order = new[] { Sp(AlarmType.LowLow), Sp(AlarmType.Low), Sp(AlarmType.High), Sp(AlarmType.HighHigh) }.Where(v => v is not null).Select(v => v!.Value).ToList();
+            for (var k = 1; k < order.Count; k++)
+                if (order[k] <= order[k - 1])
+                {
+                    var tag = byInstrument.TryGetValue(g.Key!.Value, out var ins) ? ins.Tag : "?";
+                    yield return r.Issue($"Alarm limits of {tag} are not ordered LL < L < H < HH.", "Review the alarm set points.", obj: tag);
+                    break;
+                }
+        }
+        foreach (var g in c.Project.Alarms.GroupBy(a => a.Tag, StringComparer.OrdinalIgnoreCase).Where(g => g.Key.Length > 0 && g.Count() > 1))
+            yield return r.Issue($"Alarm tag {g.Key} is used {g.Count()} times.", "Rename the alarms.", obj: g.Key);
+    }
+
+    private static IEnumerable<ValidationIssue> ScadaChecks(ValidationContext c, DelegateRule r)
+    {
+        var nodes = c.Project.ScadaNodes;
+        foreach (var n in nodes.Where(n => n.IpAddress.Length > 0 && !IsIpv4(n.IpAddress)))
+            yield return r.Issue($"Node {n.Name}: '{n.IpAddress}' is not a valid IPv4 address.", "Enter a dotted IPv4 address (e.g. 192.168.10.20).", obj: n.Name);
+        foreach (var g in nodes.Where(n => IsIpv4(n.IpAddress)).GroupBy(n => (n.Network, n.IpAddress)).Where(g => g.Count() > 1))
+            yield return r.Issue($"IP address {g.Key.IpAddress} is used by {string.Join(", ", g.Select(n => n.Name))} on {g.Key.Network}.", "Assign unique addresses.", obj: g.Key.IpAddress);
+        var byId = nodes.ToDictionary(n => n.Id);
+        foreach (var n in nodes)
+        {
+            var seen = new HashSet<Guid> { n.Id };
+            var cur = n.ParentId;
+            while (cur is { } p && byId.TryGetValue(p, out var parent))
+            {
+                if (!seen.Add(p)) { yield return r.Issue($"Node {n.Name} is part of a connection loop.", "Correct the upstream connections.", obj: n.Name); break; }
+                cur = parent.ParentId;
+            }
+            if (n.ParentId is { } pid && !byId.ContainsKey(pid)) yield return r.Issue($"Node {n.Name} is connected to a deleted node.", "Reconnect the node.", obj: n.Name);
+        }
+    }
+
+    private static bool IsIpv4(string s)
+    {
+        var parts = s.Split('.');
+        return parts.Length == 4 && parts.All(p => p.Length is > 0 and <= 3 && p.All(char.IsDigit) && int.Parse(p, System.Globalization.CultureInfo.InvariantCulture) <= 255);
+    }
 
     private static IEnumerable<ValidationIssue> UnconnectedPins(ValidationContext c, DelegateRule r)
     {

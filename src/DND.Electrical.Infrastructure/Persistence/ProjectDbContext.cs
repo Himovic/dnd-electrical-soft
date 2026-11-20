@@ -101,6 +101,11 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
             Children(e, x => x.Commissioning);
             Children(e, x => x.Layouts3D);
             Children(e, x => x.PowerNetworks);
+            Children(e, x => x.Instruments);
+            Children(e, x => x.Loops);
+            Children(e, x => x.Alarms);
+            Children(e, x => x.CauseEffects);
+            Children(e, x => x.ScadaNodes);
             e.OwnsMany(x => x.Symbols, s =>
             {
                 s.ToTable("ProjectSymbols");
@@ -214,6 +219,26 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
         b.Entity<CommentRecord>(e => { e.ToTable("Comments"); e.HasIndex(x => x.TargetId); });
         b.Entity<DocumentRegisterEntry>(e => e.ToTable("DocumentRegister"));
         b.Entity<MaintenanceRecord>(e => { e.ToTable("MaintenanceRecords"); e.HasIndex(x => x.ObjectId); });
+        b.Entity<Instrument>(e =>
+        {
+            e.ToTable("Instruments"); e.HasIndex(x => x.Tag); e.Ignore(x => x.IsAnalog);
+            e.Property(x => x.Variable).HasConversion<string>().HasMaxLength(30); e.Property(x => x.Function).HasConversion<string>().HasMaxLength(30);
+            e.Property(x => x.Signal).HasConversion<string>().HasMaxLength(30); e.Property(x => x.Status).HasConversion<string>().HasMaxLength(30);
+        });
+        b.Entity<ControlLoop>(e => { e.ToTable("ControlLoops"); e.HasIndex(x => x.Tag); e.Property(x => x.Type).HasConversion<string>().HasMaxLength(30); });
+        b.Entity<AlarmDefinition>(e =>
+        {
+            e.ToTable("Alarms"); e.HasIndex(x => x.Tag);
+            e.Property(x => x.Type).HasConversion<string>().HasMaxLength(30); e.Property(x => x.Priority).HasConversion<string>().HasMaxLength(20); e.Property(x => x.Class).HasConversion<string>().HasMaxLength(30);
+        });
+        b.Entity<CauseEffectMatrix>(e =>
+        {
+            e.ToTable("CauseEffectMatrices");
+            e.Property(x => x.Causes).HasConversion(JsonConverter<List<CauseEffectCause>>(), JsonComparer<List<CauseEffectCause>>()).HasColumnName("CausesJson");
+            e.Property(x => x.Effects).HasConversion(JsonConverter<List<CauseEffectEffect>>(), JsonComparer<List<CauseEffectEffect>>()).HasColumnName("EffectsJson");
+            e.Property(x => x.Links).HasConversion(JsonConverter<List<CauseEffectLink>>(), JsonComparer<List<CauseEffectLink>>()).HasColumnName("LinksJson");
+        });
+        b.Entity<ScadaNode>(e => { e.ToTable("ScadaNodes"); e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30); });
         b.Entity<PowerNetworkDocument>(e => { e.ToTable("PowerNetworks"); e.Property(x => x.Name).HasMaxLength(200); });
         b.Entity<Layout3DDocument>(e => { e.ToTable("Layouts3D"); e.Property(x => x.Name).HasMaxLength(200); e.Property(x => x.Kind).HasMaxLength(40); });
         b.Entity<CommissioningRecord>(e => { e.ToTable("CommissioningRecords"); e.Property(x => x.Result).HasConversion<string>().HasMaxLength(30); e.HasIndex(x => x.ObjectId); });

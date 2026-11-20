@@ -48,6 +48,11 @@ public sealed class ElectricalProject
     public List<CommissioningRecord> Commissioning { get; set; } = new();
     public List<Layout3DDocument> Layouts3D { get; set; } = new();
     public List<PowerNetworkDocument> PowerNetworks { get; set; } = new();
+    public List<Instrument> Instruments { get; set; } = new();
+    public List<ControlLoop> Loops { get; set; } = new();
+    public List<AlarmDefinition> Alarms { get; set; } = new();
+    public List<CauseEffectMatrix> CauseEffects { get; set; } = new();
+    public List<ScadaNode> ScadaNodes { get; set; } = new();
 
     // ------------------------------------------------------------------ lookups
 

@@ -427,6 +427,99 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== Automation ============================== -->
+    <DataTemplate DataType="{x:Type vm:AutomationViewModel}">
+        <DockPanel Margin="6">
+            <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Messages}" Height="70" Margin="0,6,0,0"/>
+            <TabControl>
+                <TabItem Header="Instruments">
+                    <DockPanel>
+                        <WrapPanel DockPanel.Dock="Top">
+                            <Button Content="Add instrument…" Command="{Binding AddInstrumentCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Assign PLC I/O…" Command="{Binding AssignIoCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Propose alarms…" Command="{Binding ProposeAlarmsCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Add loop for selected…" Command="{Binding AddLoopCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Delete" Command="{Binding DeleteSelectedCommand}" CommandParameter="{Binding SelectedInstrument}" Style="{StaticResource FlatButton}"/>
+                        </WrapPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Hazardous zone and Ex marking are recorded from certificates; the software does not determine zones or equipment suitability."/>
+                        <DataGrid ItemsSource="{Binding Instruments}" SelectedItem="{Binding SelectedInstrument}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="AutomationGrid_CellEditEnding"/>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Control loops">
+                    <DockPanel>
+                        <WrapPanel DockPanel.Dock="Top">
+                            <Button Content="Add loop…" Command="{Binding AddLoopCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Generate loop diagram" Command="{Binding GenerateLoopDiagramCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Delete" Command="{Binding DeleteSelectedCommand}" CommandParameter="{Binding SelectedLoop}" Style="{StaticResource FlatButton}"/>
+                        </WrapPanel>
+                        <DataGrid ItemsSource="{Binding Loops}" SelectedItem="{Binding SelectedLoop}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="AutomationGrid_CellEditEnding"/>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Alarms">
+                    <DockPanel>
+                        <WrapPanel DockPanel.Dock="Top"><Button Content="Add alarm" Command="{Binding AddAlarmCommand}" Style="{StaticResource FlatButton}"/></WrapPanel>
+                        <DataGrid ItemsSource="{Binding Alarms}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="AutomationGrid_CellEditEnding"/>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Cause and effect">
+                    <DockPanel>
+                        <WrapPanel DockPanel.Dock="Top">
+                            <ComboBox ItemsSource="{Binding Matrices}" SelectedItem="{Binding SelectedMatrix}" DisplayMemberPath="Name" Width="240"/>
+                            <Button Content="New matrix…" Command="{Binding NewMatrixCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Add cause…" Command="{Binding AddCauseCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Add effect…" Command="{Binding AddEffectCommand}" Style="{StaticResource FlatButton}"/>
+                        </WrapPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Evaluation}" Margin="0,6,0,0" FontWeight="SemiBold"/>
+                        <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap"
+                                   Text="Click a cell to set or clear a mark. Tick causes to review which effects the documented logic triggers (desk check only – nothing is sent to equipment)."/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="330,0,0,4">
+                                    <ItemsControl ItemsSource="{Binding MatrixEffects}">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Width="90" TextWrapping="Wrap" FontSize="11" TextAlignment="Center"><Run Text="{Binding Tag, Mode=OneWay}" FontWeight="SemiBold"/><LineBreak/><Run Text="{Binding Action, Mode=OneWay}"/></TextBlock></DataTemplate></ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding MatrixRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,1">
+                                                <CheckBox IsChecked="{Binding Active}" Width="24" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" Width="306" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip="{Binding Label}"/>
+                                                <ItemsControl ItemsSource="{Binding Cells}">
+                                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Button Width="88" Height="24" Margin="1" Command="{Binding ToggleCommand}" Content="{Binding Mark}" FontWeight="Bold">
+                                                                <Button.Style><Style TargetType="Button"><Setter Property="Background" Value="White"/><Style.Triggers><DataTrigger Binding="{Binding Triggered}" Value="True"><Setter Property="Background" Value="#FCA5A5"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                                            </Button>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Control architecture">
+                    <DockPanel>
+                        <WrapPanel DockPanel.Dock="Top">
+                            <Button Content="Add node…" Command="{Binding AddNodeCommand}" Style="{StaticResource FlatButton}"/>
+                            <Button Content="Import PLC stations" Command="{Binding ImportPlcStationsCommand}" Style="{StaticResource FlatButton}"/>
+                        </WrapPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="ParentId links a node to its upstream switch/gateway. Addressing and topology are checked by validation rule AUT006."/>
+                        <DataGrid ItemsSource="{Binding Nodes}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="AutomationGrid_CellEditEnding"/>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== D&D PowerStudio ============================== -->
     <DataTemplate DataType="{x:Type vm:PowerStudioViewModel}">
         <DockPanel Margin="6">

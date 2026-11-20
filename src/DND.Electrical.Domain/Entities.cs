@@ -41,6 +41,10 @@ public static class DeviceProperties
     public const string BreakingCapacity = "BreakingCapacity";
     public const string Curve = "Curve";
     public const string Poles = "Poles";
+    /// <summary>Hazardous area classification entered by the user (e.g. "Zone 1", "Zone 21"); not derived by the software.</summary>
+    public const string HazardousZone = "HazardousZone";
+    /// <summary>Ex marking from the equipment certificate (e.g. "Ex db IIB T4 Gb"); recorded, never generated.</summary>
+    public const string ExMarking = "ExMarking";
 }
 
 public sealed class Cable

@@ -147,6 +147,7 @@
                     </StackPanel></GroupBox>
                     <GroupBox Header="Data" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE80A;" Content="Engineering data" Command="{Binding OpenEngineeringDataCommand}" ToolTip="BOM, cables, terminals, PLC I/O, motors, loads, cabinet layout"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xE9F5;" Content="Automation" Command="{Binding OpenAutomationCommand}" ToolTip="Instruments, control loops, alarms, cause and effect matrices, control system architecture"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE945;" Content="PowerStudio" Command="{Binding OpenPowerStudioCommand}" ToolTip="D&amp;D PowerStudio: load flow, IEC 60909 short circuit, protection coordination, harmonic scan"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xF158;" Content="3D layout" Command="{Binding Open3DCommand}" ToolTip="3D cabinet model from the 2D layout, equipment, cable trays, clash and clearance checks, section and exploded views, glTF/GLB/STL export"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE8F9;" Content="Project mgmt" Command="{Binding OpenProjectManagementCommand}" ToolTip="Lifecycle phase, members, tasks, milestones, issues, approvals, document register, maintenance, commissioning, engineering objects"/>

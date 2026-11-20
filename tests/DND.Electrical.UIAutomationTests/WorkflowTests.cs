@@ -20,7 +20,8 @@ public class WorkflowTests
         using var h = new UiHarness();
         Assert.True(h.Main.ShowStartPage);
         Assert.False(h.Main.IsProjectOpen);
-        Assert.Equal(5, h.Main.DemoProjects.Count);
+        Assert.Equal(10, h.Main.DemoProjects.Count);
+        Assert.Contains(h.Main.DemoProjects, d => d.Number == "DEMO-DC-008");
         Assert.Contains("D&D Electrical & Automation Engineering Suite", h.Main.Title);
         Assert.Equal("Powered by D&D | Data&Development", h.Main.PoweredBy);
         Assert.False(h.Main.SaveCommand.CanExecute(null));
@@ -548,5 +549,66 @@ public class PowerStudioWorkflowTests
 
         h.Main.OpenPowerStudioCommand.Execute(null);
         Assert.IsType<PowerStudioViewModel>(h.Dialogs.Shown.Last());
+    }
+}
+
+public class AutomationWorkflowTests
+{
+    [Fact]
+    public async Task Automation_window_edits_instruments_and_reviews_cause_and_effect_logic()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-OG-009");
+        var p = h.Main.Session!.Project;
+        h.Main.OpenAutomationCommand.Execute(null);
+        var vm = Assert.IsType<AutomationViewModel>(h.Dialogs.Shown.Last());
+        Assert.Equal(9, vm.Instruments.Count);
+
+        // Cause and effect review: ticking the gas detection cause triggers all four effects.
+        var gas = vm.MatrixRows.Single(r => r.Cause.Tag.StartsWith("GD-310"));
+        gas.Active = true;
+        Assert.Equal(4, gas.Cells.Count(c => c.Triggered));
+        Assert.Contains("XV-306 Open", vm.Evaluation);
+        gas.Active = false;
+        Assert.Equal("No effect triggered.", vm.Evaluation);
+
+        // Toggle a mark and add a new cause linked to the selected instrument.
+        var lowP = vm.MatrixRows.Single(r => r.Cause.Tag.StartsWith("PT-301"));
+        var blowdown = lowP.Cells.Single(c => c.Effect.Tag == "XV-306");
+        Assert.Equal("", blowdown.Mark);
+        blowdown.ToggleCommand.Execute(null);
+        Assert.Equal("X", blowdown.Mark);
+        Assert.True(h.Main.Session.IsDirty);
+
+        vm.SelectedInstrument = vm.Instruments.Single(i => i.Tag == "TT-303");
+        h.Dialogs.Prompts.Enqueue("0.1,0.2,0.8,0.9");
+        h.Dialogs.ConfirmAnswer = true;
+        var alarmsBefore = p.Alarms.Count;
+        vm.ProposeAlarmsCommand.Execute(null);
+        Assert.Equal(alarmsBefore + 2, p.Alarms.Count); // H and HH already exist; L and LL added
+        vm.SelectedLoop = vm.Loops.Single(l => l.Tag == "PIC-301");
+        vm.GenerateLoopDiagramCommand.Execute(null);
+        Assert.Contains(p.Sheets, s => s.Title == "Loop diagram PIC-301");
+
+        // New instrument and I/O assignment through the dialog
+        h.Dialogs.Prompts.Enqueue("ft-330");
+        vm.AddInstrumentCommand.Execute(null);
+        Assert.Equal("FT-330", vm.SelectedInstrument!.Tag);
+        Assert.Equal(DND.Electrical.Domain.MeasuredVariable.Flow, vm.SelectedInstrument.Variable);
+        vm.SelectedInstrument.RangeMax = 500; vm.SelectedInstrument.Unit = "Nm³/h";
+        // No queued answer: the dialog returns its default, i.e. the suggested spare channel.
+        vm.AssignIoCommand.Execute(null);
+        Assert.NotNull(vm.SelectedInstrument.PlcChannelId);
+    }
+
+    [Fact]
+    public async Task Automation_requires_the_auto_module()
+    {
+        using var h = new UiHarness();
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        var main = new MainViewModel(h.Services with { Licensing = limited });
+        await main.OpenDemoCommand.ExecuteAsync("DEMO-OG-009");
+        main.OpenAutomationCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "AUTO");
     }
 }

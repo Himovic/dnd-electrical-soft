@@ -19,6 +19,7 @@ public sealed class ProjectReports(ElectricalProject project, ConnectivityGraph 
     public static IReadOnlyList<(string id, string title)> Catalogue(string language) => new[]
     {
         "summary", "sheets", "bom", "equipment", "motors", "loads", "cables", "cablecores", "wires", "terminals", "plcio", "xref", "cabinet", "calculations", "validation", "revisions",
+        "instruments", "loops", "alarms", "causeeffect", "scada",
     }.Select(id => (id, L.T(id, language))).ToList();
 
     public ReportTable Build(string id) => id switch
@@ -39,8 +40,84 @@ public sealed class ProjectReports(ElectricalProject project, ConnectivityGraph 
         "calculations" => Calculations(),
         "validation" => ValidationReportTable(new ValidationEngine().Run(project, graph)),
         "revisions" => Revisions(),
+        "instruments" => InstrumentIndex(),
+        "loops" => LoopList(),
+        "alarms" => AlarmList(),
+        "causeeffect" => CauseEffect(),
+        "scada" => ScadaArchitecture(),
         _ => throw new ArgumentException($"Unknown report '{id}'."),
     };
+
+    public ReportTable InstrumentIndex()
+    {
+        var t = new ReportTable { Id = "instruments", Title = T("instruments"), Subtitle = project.Info.Number }
+            .Col("Tag", 1).Col(T("description"), 2.4).Col("Variable", 1).Col("Function", 1.1).Col("Signal", 1.1).Col("Range", 1.3).Col("Loop", 0.9).Col("PLC I/O", 1.1).Col("Area / zone", 1.3).Col("Ex marking", 1.3).Col("Status", 0.9);
+        var channels = project.PlcStations.SelectMany(s => s.Channels.Select(c => (s, c))).ToDictionary(x => x.c.Id);
+        foreach (var i in project.Instruments.OrderBy(i => i.Tag, StringComparer.OrdinalIgnoreCase))
+        {
+            var loop = project.Loops.FirstOrDefault(l => l.Id == i.LoopId)?.Tag ?? "";
+            var io = i.PlcChannelId is { } id && channels.TryGetValue(id, out var ch) ? $"{ch.s.Tag} {ch.c.Address}" : "";
+            t.Row(i.Tag, i.Description, i.Variable, i.Function, i.Signal, i.IsAnalog ? $"{i.RangeMin:0.###}…{i.RangeMax:0.###} {i.Unit}" : "", loop, io,
+                string.Join(" / ", new[] { i.Area, i.HazardousZone }.Where(x => x.Length > 0)), i.ExMarking, i.Status);
+        }
+        if (project.Instruments.Any(i => i.HazardousZone.Length > 0)) t.Notes.Add("Hazardous-area data are recorded as entered from certificates; suitability is not verified by the software.");
+        return t;
+    }
+
+    public ReportTable LoopList()
+    {
+        var t = new ReportTable { Id = "loops", Title = T("loops"), Subtitle = project.Info.Number }
+            .Col("Loop", 1).Col(T("description"), 2.5).Col("Type", 0.9).Col("Measurement", 1.1).Col("Final element", 1.3).Col("Controller", 1.1).Col("Set point", 1).Col("Tuning", 1.4);
+        string Inst(Guid? id) => project.Instruments.FirstOrDefault(i => i.Id == id)?.Tag ?? "";
+        foreach (var l in project.Loops.OrderBy(l => l.Tag, StringComparer.OrdinalIgnoreCase))
+        {
+            var final = l.FinalElementId is not null ? Inst(l.FinalElementId) : l.FinalDeviceId is { } d ? project.FindDevice(d)?.Tag ?? "" : "";
+            var tuning = l.Gain is null ? "" : $"Kp {l.Gain:0.###}" + (l.IntegralS is { } ti ? $", Ti {ti:0.#} s" : "") + (l.DerivativeS is { } td ? $", Td {td:0.#} s" : "");
+            t.Row(l.Tag, l.Description, l.Type, Inst(l.MeasurementId), final, l.Controller, l.SetPoint is { } sp ? $"{sp:0.###} {l.Unit}" : "", tuning);
+        }
+        return t;
+    }
+
+    public ReportTable AlarmList()
+    {
+        var t = new ReportTable { Id = "alarms", Title = T("alarms"), Subtitle = project.Info.Number }
+            .Col("Alarm", 1.1).Col("Source", 1).Col("Type", 0.9).Col("Set point", 1).Col("Priority", 0.8).Col("Class", 0.9).Col("Message", 2.4).Col("Operator action", 2.4);
+        foreach (var a in project.Alarms.OrderBy(a => a.Tag, StringComparer.OrdinalIgnoreCase))
+        {
+            var src = project.Instruments.FirstOrDefault(i => i.Id == a.InstrumentId)?.Tag ?? (a.DeviceId is { } d ? project.FindDevice(d)?.Tag : null) ?? "";
+            t.Row(a.Tag, src, a.Type, a.SetPoint is { } sp ? $"{sp:0.###} {a.Unit}" : "", a.Priority, a.Class, a.Message, a.OperatorAction);
+        }
+        return t;
+    }
+
+    /// <summary>Cause and effect matrix flattened as a table: one row per cause, one column per effect.</summary>
+    public ReportTable CauseEffect()
+    {
+        var t = new ReportTable { Id = "causeeffect", Title = T("causeeffect"), Subtitle = project.Info.Number };
+        var m = project.CauseEffects.FirstOrDefault();
+        t.Col("Cause", 1).Col(T("description"), 2.2);
+        if (m is null) { t.Notes.Add("No cause and effect matrix defined."); return t; }
+        foreach (var e in m.Effects) t.Col($"{e.Tag} {e.Action}", 0.8, ColumnAlign.Center);
+        foreach (var c in m.Causes)
+        {
+            var cells = new List<object> { c.Tag, $"{c.Description} {c.Condition}".Trim() };
+            cells.AddRange(m.Effects.Select(e => (object)(m.Links.FirstOrDefault(l => l.CauseId == c.Id && l.EffectId == e.Id)?.Mark ?? "")));
+            t.Row(cells.ToArray());
+        }
+        t.Notes.Add($"{m.Name} rev {m.Revision}. Effects: " + string.Join("; ", m.Effects.Select(e => $"{e.Tag} – {e.Description} ({e.Action})")));
+        if (project.CauseEffects.Count > 1) t.Notes.Add($"{project.CauseEffects.Count - 1} further matri(x/ces) in the project.");
+        return t;
+    }
+
+    public ReportTable ScadaArchitecture()
+    {
+        var t = new ReportTable { Id = "scada", Title = T("scada"), Subtitle = project.Info.Number }
+            .Col("Node", 1.5).Col("Kind", 1.1).Col("Network", 1.2).Col("Zone", 1).Col("IP address", 1.1).Col("Connected to", 1.3).Col("Protocol", 1.1).Col("Redundant", 0.7, ColumnAlign.Center);
+        var byId = project.ScadaNodes.ToDictionary(n => n.Id);
+        foreach (var n in project.ScadaNodes)
+            t.Row(n.Name, n.Kind, n.Network, n.Zone, n.IpAddress, n.ParentId is { } p && byId.TryGetValue(p, out var parent) ? parent.Name : "", n.Protocol, n.Redundant ? "yes" : "");
+        return t;
+    }
 
     public ReportTable Summary()
     {
