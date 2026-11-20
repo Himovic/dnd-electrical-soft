@@ -612,3 +612,41 @@ public class AutomationWorkflowTests
         Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "AUTO");
     }
 }
+
+public class TwinWorkflowTests
+{
+    [Fact]
+    public async Task Twin_window_shows_simulated_values_with_banner_alarms_and_trend()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-OG-009");
+        var p = h.Main.Session!.Project;
+        h.Main.OpenTwinCommand.Execute(null);
+        await using var vm = Assert.IsType<TwinViewModel>(h.Dialogs.Shown.Last());
+        vm.CreateSimulatedPointsCommand.Execute(null);
+        Assert.Equal(p.Instruments.Count(i => i.IsAnalog), vm.Points.Count);
+        Assert.All(vm.Points, t => Assert.Equal(DND.Electrical.Domain.TwinSourceKind.Simulator, t.Source));
+        vm.SelectedPoint = vm.Points.First();
+        await vm.PollOnceAsync();
+        await vm.PollOnceAsync();
+        Assert.True(vm.ShowsSimulatedData);
+        Assert.All(vm.Values, v => Assert.True(v.Simulated));
+        Assert.NotEmpty(vm.Trend);
+        // The simulated range reaches above the HH limits of some instruments → simulated alarms are labelled.
+        Assert.All(vm.ActiveAlarms, a => Assert.EndsWith("[SIMULATED]", a));
+
+        var view = DND.Electrical.Application.Services.EngineeringObjectService.Describe(p, p.Devices.First());
+        Assert.NotNull(view);
+    }
+
+    [Fact]
+    public async Task Twin_requires_the_twin_module()
+    {
+        using var h = new UiHarness();
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        var main = new MainViewModel(h.Services with { Licensing = limited });
+        await main.OpenDemoCommand.ExecuteAsync("DEMO-OG-009");
+        main.OpenTwinCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "TWIN");
+    }
+}

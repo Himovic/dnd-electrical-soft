@@ -106,6 +106,7 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
             Children(e, x => x.Alarms);
             Children(e, x => x.CauseEffects);
             Children(e, x => x.ScadaNodes);
+            Children(e, x => x.TwinPoints);
             e.OwnsMany(x => x.Symbols, s =>
             {
                 s.ToTable("ProjectSymbols");
@@ -238,6 +239,7 @@ public sealed class ProjectDbContext(DbContextOptions<ProjectDbContext> options)
             e.Property(x => x.Effects).HasConversion(JsonConverter<List<CauseEffectEffect>>(), JsonComparer<List<CauseEffectEffect>>()).HasColumnName("EffectsJson");
             e.Property(x => x.Links).HasConversion(JsonConverter<List<CauseEffectLink>>(), JsonComparer<List<CauseEffectLink>>()).HasColumnName("LinksJson");
         });
+        b.Entity<TwinPoint>(e => { e.ToTable("TwinPoints"); e.HasIndex(x => x.Tag); e.Property(x => x.Source).HasConversion<string>().HasMaxLength(20); });
         b.Entity<ScadaNode>(e => { e.ToTable("ScadaNodes"); e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30); });
         b.Entity<PowerNetworkDocument>(e => { e.ToTable("PowerNetworks"); e.Property(x => x.Name).HasMaxLength(200); });
         b.Entity<Layout3DDocument>(e => { e.ToTable("Layouts3D"); e.Property(x => x.Name).HasMaxLength(200); e.Property(x => x.Kind).HasMaxLength(40); });

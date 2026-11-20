@@ -53,6 +53,7 @@ public sealed class ElectricalProject
     public List<AlarmDefinition> Alarms { get; set; } = new();
     public List<CauseEffectMatrix> CauseEffects { get; set; } = new();
     public List<ScadaNode> ScadaNodes { get; set; } = new();
+    public List<TwinPoint> TwinPoints { get; set; } = new();
 
     // ------------------------------------------------------------------ lookups
 

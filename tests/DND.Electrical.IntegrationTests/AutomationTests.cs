@@ -24,7 +24,7 @@ public class AutomationTests
         Assert.All(p.Instruments.Where(i => i.HazardousZone.Length > 0), i => Assert.Contains("demo record", i.ExMarking));
         Assert.Equal(4, p.Loops.Count);
         var ce = Assert.Single(p.CauseEffects);
-        Assert.Empty(Issues(env, p, "AUT").Where(i => i.Severity != Severity.Information));
+        Assert.DoesNotContain(Issues(env, p, "AUT"), i => i.Severity != Severity.Information);
         // Gas detected trips everything; low suction pressure does not open the blowdown valve.
         var gas = ce.Causes.Single(c => c.Tag.StartsWith("GD-310"));
         Assert.Equal(4, AutomationService.Evaluate(ce, new[] { gas.Id }).Count);
@@ -153,7 +153,7 @@ public class AutomationTests
         Assert.NotEmpty(p.Members);
         Assert.NotEmpty(p.Tasks);
         Assert.NotEmpty(p.Calculations);
-        Assert.Empty(Issues(env, p, "AUT").Where(i => i.Severity == Severity.Error));
+        Assert.DoesNotContain(Issues(env, p, "AUT"), i => i.Severity == Severity.Error);
     }
 
     [Theory]

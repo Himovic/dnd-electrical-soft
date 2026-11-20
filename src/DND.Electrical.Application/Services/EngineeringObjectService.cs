@@ -67,6 +67,7 @@ public static class EngineeringObjectService
         foreach (var c in p.Commissioning.Where(c => c.ObjectId == d.Id))
             reps.Add(new(RepresentationKind.Commissioning, c.Id, $"{c.Test}: {c.Result}", c.Date?.ToString("d", CultureInfo.InvariantCulture) ?? "not tested"));
         reps.AddRange(ThreeDService.Representations(p, d));
+        reps.AddRange(TwinService.Representations(p, d));
         foreach (var provider in Providers) reps.AddRange(provider(p, d));
         return new EngineeringObjectView(d, reps, Conflicts(p, d));
     }

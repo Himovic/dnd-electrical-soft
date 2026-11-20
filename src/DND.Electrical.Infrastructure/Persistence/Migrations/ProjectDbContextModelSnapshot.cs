@@ -1956,6 +1956,73 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("TerminalStrips", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.TwinPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DeviceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("InstrumentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Offset")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Scale")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("SimMax")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("SimMin")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("SimPeriodS")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tag")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("Tag");
+
+                    b.ToTable("TwinPoints", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.ValidationRunRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2475,6 +2542,14 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.TwinPoint", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("TwinPoints")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.ValidationRunRecord", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
@@ -2554,6 +2629,8 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.Navigation("Tasks");
 
                     b.Navigation("TerminalStrips");
+
+                    b.Navigation("TwinPoints");
 
                     b.Navigation("ValidationRuns");
                 });

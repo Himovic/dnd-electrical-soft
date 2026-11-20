@@ -30,6 +30,11 @@ public partial class ViewTemplates
         if (e.EditAction == System.Windows.Controls.DataGridEditAction.Commit && sender is System.Windows.FrameworkElement { DataContext: AutomationViewModel vm }) vm.Changed();
     }
 
+    private void TwinGrid_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
+    {
+        if (e.EditAction == System.Windows.Controls.DataGridEditAction.Commit && sender is System.Windows.FrameworkElement { DataContext: TwinViewModel vm }) vm.Changed();
+    }
+
     private void SymbolCommand_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || sender is not TextBox { Tag: CadEditor editor } box) return;

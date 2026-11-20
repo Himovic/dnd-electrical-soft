@@ -130,7 +130,7 @@ public static class ProjectGraphWriter
         Order(ctx, project.Catalog); Order(ctx, project.Procurement); Order(ctx, project.Loads); Order(ctx, project.Calculations);
         Order(ctx, project.Attachments); Order(ctx, project.AuditEvents); Order(ctx, project.ValidationRuns); Order(ctx, project.Symbols);
         Order(ctx, project.Members); Order(ctx, project.Tasks); Order(ctx, project.Milestones); Order(ctx, project.Issues); Order(ctx, project.Approvals);
-        Order(ctx, project.Comments); Order(ctx, project.DocumentRegister); Order(ctx, project.Maintenance); Order(ctx, project.Commissioning); Order(ctx, project.Layouts3D); Order(ctx, project.PowerNetworks); Order(ctx, project.Instruments); Order(ctx, project.Loops); Order(ctx, project.Alarms); Order(ctx, project.CauseEffects); Order(ctx, project.ScadaNodes);
+        Order(ctx, project.Comments); Order(ctx, project.DocumentRegister); Order(ctx, project.Maintenance); Order(ctx, project.Commissioning); Order(ctx, project.Layouts3D); Order(ctx, project.PowerNetworks); Order(ctx, project.Instruments); Order(ctx, project.Loops); Order(ctx, project.Alarms); Order(ctx, project.CauseEffects); Order(ctx, project.ScadaNodes); Order(ctx, project.TwinPoints);
 
         // Derived, queryable connection table.
         var graph = ConnectivityGraph.Build(project);
@@ -158,7 +158,7 @@ public static class ProjectGraphWriter
             .Include(x => x.Catalog).Include(x => x.Procurement).Include(x => x.Loads).Include(x => x.Calculations)
             .Include(x => x.Attachments).Include(x => x.AuditEvents).Include(x => x.ValidationRuns)
             .Include(x => x.Members).Include(x => x.Tasks).Include(x => x.Milestones).Include(x => x.Issues).Include(x => x.Approvals)
-            .Include(x => x.Comments).Include(x => x.DocumentRegister).Include(x => x.Maintenance).Include(x => x.Commissioning).Include(x => x.Layouts3D).Include(x => x.PowerNetworks).Include(x => x.Instruments).Include(x => x.Loops).Include(x => x.Alarms).Include(x => x.CauseEffects).Include(x => x.ScadaNodes);
+            .Include(x => x.Comments).Include(x => x.DocumentRegister).Include(x => x.Maintenance).Include(x => x.Commissioning).Include(x => x.Layouts3D).Include(x => x.PowerNetworks).Include(x => x.Instruments).Include(x => x.Loops).Include(x => x.Alarms).Include(x => x.CauseEffects).Include(x => x.ScadaNodes).Include(x => x.TwinPoints);
         var project = projectId is { } id
             ? await query.SingleOrDefaultAsync(p => p.Id == id, ct) ?? throw new InvalidDataException($"Project {id} not found.")
             : await query.SingleOrDefaultAsync(ct) ?? throw new InvalidDataException("The file does not contain a project.");
@@ -182,7 +182,7 @@ public static class ProjectGraphWriter
         Sort(ctx, project.Catalog); Sort(ctx, project.Procurement); Sort(ctx, project.Loads); Sort(ctx, project.Calculations);
         Sort(ctx, project.Attachments); Sort(ctx, project.AuditEvents); Sort(ctx, project.ValidationRuns); Sort(ctx, project.Symbols);
         Sort(ctx, project.Members); Sort(ctx, project.Tasks); Sort(ctx, project.Milestones); Sort(ctx, project.Issues); Sort(ctx, project.Approvals);
-        Sort(ctx, project.Comments); Sort(ctx, project.DocumentRegister); Sort(ctx, project.Maintenance); Sort(ctx, project.Commissioning); Sort(ctx, project.Layouts3D); Sort(ctx, project.PowerNetworks); Sort(ctx, project.Instruments); Sort(ctx, project.Loops); Sort(ctx, project.Alarms); Sort(ctx, project.CauseEffects); Sort(ctx, project.ScadaNodes);
+        Sort(ctx, project.Comments); Sort(ctx, project.DocumentRegister); Sort(ctx, project.Maintenance); Sort(ctx, project.Commissioning); Sort(ctx, project.Layouts3D); Sort(ctx, project.PowerNetworks); Sort(ctx, project.Instruments); Sort(ctx, project.Loops); Sort(ctx, project.Alarms); Sort(ctx, project.CauseEffects); Sort(ctx, project.ScadaNodes); Sort(ctx, project.TwinPoints);
         ctx.ChangeTracker.Clear();
         return project;
     }

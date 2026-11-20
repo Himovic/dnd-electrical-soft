@@ -141,3 +141,29 @@ public sealed class ScadaNode
     public Guid? PlcStationId { get; set; }
     public string Notes { get; set; } = string.Empty;
 }
+
+public enum TwinSourceKind { Simulator, ModbusTcp, Mqtt, OpcUa }
+
+/// <summary>
+/// Digital-twin data point bound to an engineering object. Values come from a field protocol (Modbus TCP, MQTT) or
+/// from the built-in simulator; simulated values are always flagged as such.
+/// </summary>
+public sealed class TwinPoint
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Tag { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public Guid? DeviceId { get; set; }
+    public Guid? InstrumentId { get; set; }
+    public TwinSourceKind Source { get; set; } = TwinSourceKind.Simulator;
+    /// <summary>Modbus: host:port/unit · MQTT: host:port · OPC UA: endpoint URL.</summary>
+    public string Endpoint { get; set; } = string.Empty;
+    /// <summary>Modbus: HR|IR|CO|DI:offset[:i16|u16|f32|f32sw] · MQTT: topic (numeric payload or JSON with "value").</summary>
+    public string Address { get; set; } = string.Empty;
+    public double Scale { get; set; } = 1;
+    public double Offset { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public double SimMin { get; set; }
+    public double SimMax { get; set; } = 100;
+    public double SimPeriodS { get; set; } = 60;
+}

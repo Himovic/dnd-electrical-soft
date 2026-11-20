@@ -427,6 +427,43 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== Digital twin ============================== -->
+    <DataTemplate DataType="{x:Type vm:TwinViewModel}">
+        <DockPanel Margin="6">
+            <Border DockPanel.Dock="Top" Background="#B45309" Padding="8,4" Margin="0,0,0,6">
+                <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding ShowsSimulatedData}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style>
+                <TextBlock Foreground="White" FontWeight="Bold" Text="SIMULATED DATA – values marked Simulated come from the built-in simulator, not from field equipment."/>
+            </Border>
+            <WrapPanel DockPanel.Dock="Top" Margin="2">
+                <Button Content="Start" Command="{Binding StartCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Stop" Command="{Binding StopCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock Text="Interval (s):" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                <TextBox Text="{Binding IntervalSeconds}" Width="40"/>
+                <Button Content="Add point…" Command="{Binding AddPointCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Create simulated points from instruments" Command="{Binding CreateSimulatedPointsCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Delete point" Command="{Binding DeletePointCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource Subtle}"/>
+            </WrapPanel>
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="420"/></Grid.ColumnDefinitions>
+                <DataGrid ItemsSource="{Binding Values}" AutoGenerateColumns="True" IsReadOnly="True"/>
+                <DockPanel Grid.Column="1" Margin="6,0,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="Active alarms" FontWeight="SemiBold"/>
+                    <ListBox ItemsSource="{Binding ActiveAlarms}" Foreground="#B91C1C"/>
+                </DockPanel>
+                <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0">
+                    <Border DockPanel.Dock="Right" Width="620" Height="180" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Margin="6,0,0,0">
+                        <Canvas Margin="10"><Polyline Points="{Binding Trend}" Stroke="#2563EB" StrokeThickness="1.5"/></Canvas>
+                    </Border>
+                    <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Subtle}" TextWrapping="Wrap"
+                               Text="Sources: Modbus TCP (endpoint host:port/unit, address HR|IR|CO|DI:offset[:i16|u16|f32|f32sw]), MQTT (endpoint host:port, address = topic), Simulator. OPC UA is not available in this version."/>
+                    <DataGrid ItemsSource="{Binding Points}" SelectedItem="{Binding SelectedPoint}" AutoGenerateColumns="True" CanUserAddRows="False" CellEditEnding="TwinGrid_CellEditEnding"/>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== Automation ============================== -->
     <DataTemplate DataType="{x:Type vm:AutomationViewModel}">
         <DockPanel Margin="6">
