@@ -427,6 +427,64 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== 3D layout ============================== -->
+    <DataTemplate DataType="{x:Type vm:ThreeDViewModel}">
+        <DockPanel Margin="6">
+            <WrapPanel DockPanel.Dock="Top" Margin="2">
+                <TextBlock Text="Layout:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Layouts}" SelectedItem="{Binding SelectedLayout}" DisplayMemberPath="Name" Width="180"/>
+                <Button Content="New plant layout…" Command="{Binding NewPlantLayoutCommand}" Style="{StaticResource FlatButton}"/>
+                <TextBlock Text="Cabinet:" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Cabinets}" SelectedItem="{Binding SelectedCabinet}" DisplayMemberPath="Tag" Width="100"/>
+                <Button Content="Generate 3D from 2D layout" Command="{Binding GenerateFromCabinetCommand}" Style="{StaticResource AccentButton}"/>
+                <Button Content="Regenerate from 2D" Command="{Binding RegenerateCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Add equipment…" Command="{Binding AddEquipmentCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Add tray route…" Command="{Binding AddTrayRouteCommand}" Style="{StaticResource FlatButton}"/>
+            </WrapPanel>
+            <WrapPanel DockPanel.Dock="Top" Margin="2">
+                <Button Content="Check clashes" Command="{Binding CheckClashesCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Check 2D/3D sync" Command="{Binding CheckSyncCommand}" Style="{StaticResource FlatButton}"/>
+                <Button Content="Tray fill" Command="{Binding TrayFillCommand}" Style="{StaticResource FlatButton}"/>
+                <CheckBox Content="Enclosure" IsChecked="{Binding ShowEnclosure}" VerticalAlignment="Center" Margin="12,0"/>
+                <TextBlock Text="Explode" VerticalAlignment="Center"/>
+                <Slider Minimum="0" Maximum="2" Value="{Binding Explode}" Width="100" VerticalAlignment="Center" Margin="6,0"/>
+                <CheckBox Content="Section" IsChecked="{Binding SectionEnabled}" VerticalAlignment="Center" Margin="12,0,4,0"/>
+                <ComboBox ItemsSource="{Binding SectionAxes}" SelectedItem="{Binding SectionAxis}" Width="44"/>
+                <TextBox Text="{Binding SectionOffset, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="4,0" ToolTip="Section plane position (mm)"/>
+                <TextBlock Text="Export:" VerticalAlignment="Center" Margin="12,0,4,0"/>
+                <Button Content="GLB" Command="{Binding ExportCommand}" CommandParameter="glb" Style="{StaticResource FlatButton}"/>
+                <Button Content="glTF" Command="{Binding ExportCommand}" CommandParameter="gltf" Style="{StaticResource FlatButton}"/>
+                <Button Content="STL" Command="{Binding ExportCommand}" CommandParameter="stl" Style="{StaticResource FlatButton}"/>
+            </WrapPanel>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="380"/></Grid.ColumnDefinitions>
+                <ctl:Scene3DView Model="{Binding}"/>
+                <DockPanel Grid.Column="1" Margin="6,0,0,0">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <Button Content="Show in schematic" Command="{Binding ShowInSchematicCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Move…" Command="{Binding MoveSelectedCommand}" Style="{StaticResource FlatButton}"/>
+                        <Button Content="Delete" Command="{Binding DeleteSelectedCommand}" Style="{StaticResource FlatButton}"/>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,4">
+                        <TextBlock Text="Measure to:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox ItemsSource="{Binding Objects}" SelectedItem="{Binding MeasureTarget}" DisplayMemberPath="Name" Width="200"/>
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding Measurement}" TextWrapping="Wrap" Style="{StaticResource Subtle}"/>
+                    <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Findings}" Height="170" Margin="0,6,0,0"/>
+                    <DataGrid ItemsSource="{Binding Objects}" SelectedItem="{Binding SelectedObject}" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Tag" Binding="{Binding Tag}"/>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Kind" Binding="{Binding Kind}"/>
+                            <DataGridTextColumn Header="W×D×H" Binding="{Binding Size}"/>
+                            <DataGridTextColumn Header="Source" Binding="{Binding Source}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== Project management ============================== -->
     <DataTemplate DataType="{x:Type vm:ProjectManagementViewModel}">
         <DockPanel Margin="6">

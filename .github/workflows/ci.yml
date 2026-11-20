@@ -20,6 +20,14 @@ jobs:
           dotnet run --project src/DND.Electrical.Cli -c Release -- demo all --out out/demo
           dotnet run --project src/DND.Electrical.Cli -c Release -- export out/demo/DEMO-IND-001.dndx --format handover --out out/handover
           python3 scripts/verify-exports.py out/handover
+      - name: Verify 3D exports (trimesh and Khronos glTF-Validator)
+        run: |
+          pip install trimesh
+          dotnet run --project src/DND.Electrical.Cli -c Release -- model3d out/demo/DEMO-CAB-004.dndx --out out/cab.glb
+          dotnet run --project src/DND.Electrical.Cli -c Release -- model3d out/demo/DEMO-CAB-004.dndx --out out/cab.stl
+          python3 scripts/verify-3d.py out/cab.glb out/cab.stl --expect-extents-mm 800,300,1200
+          mkdir -p out/validator && cd out/validator && npm init -y > /dev/null && npm install gltf-validator > /dev/null
+          node ../../scripts/verify-gltf.mjs ../cab.glb
 
   windows-app:
     runs-on: windows-latest

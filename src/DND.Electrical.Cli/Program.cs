@@ -1,3 +1,4 @@
+using DND.Electrical.Application.Services;
 using System.Globalization;
 using DND.Electrical.Application.Demo;
 using DND.Electrical.Application.Exports;
@@ -99,6 +100,8 @@ public static class Program
                     foreach (var s in library.Search(Opt(args, "--search")))
                         Console.WriteLine($"{s.Id,-22} {s.Category,-15} {s.Role,-15} {s.Name}");
                     return 0;
+                case "model3d":
+                    return await Model3D(args, store, new ThreeDService(licensing));
                 case "calc":
                     Need(args.ElementAtOrDefault(1) is "short-circuit" or "transformer" or "motor" ? DND.Electrical.Licensing.EngineeringModule.POWER : DND.Electrical.Licensing.EngineeringModule.ELEC);
                     return Calc(args);
@@ -194,6 +197,27 @@ public static class Program
         return 0;
     }
 
+    /// <summary>model3d &lt;project&gt; [--cabinet TAG] [--out file.glb|.gltf|.stl] [--save]: generates the 3D cabinet model, checks clashes and exports.</summary>
+    private static async Task<int> Model3D(string[] args, SqliteProjectStore store, ThreeDService svc)
+    {
+        var p = await store.LoadAsync(args[1]);
+        var tag = Opt(args, "--cabinet");
+        var cab = tag is null ? p.Cabinets.FirstOrDefault() : p.Cabinets.FirstOrDefault(c => string.Equals(c.Tag, tag, StringComparison.OrdinalIgnoreCase));
+        if (cab is null) throw new ArgumentException(tag is null ? "The project has no cabinet layout." : $"Cabinet '{tag}' not found.");
+        var scene = svc.GenerateCabinet(p, cab);
+        Console.WriteLine($"{cab.Tag}: {scene.Objects.Count} 3D objects generated from the 2D layout ({cab.Width}×{cab.Height}×{cab.Depth} mm).");
+        var clashes = svc.Clashes(p, scene);
+        foreach (var c in clashes) Console.WriteLine($"{c.Kind,-9} {c.Description}");
+        Console.WriteLine($"{clashes.Count(c => c.Kind == DND.Electrical.ThreeD.ClashKind.Hard)} hard clash(es), {clashes.Count(c => c.Kind == DND.Electrical.ThreeD.ClashKind.Clearance)} clearance violation(s).");
+        if (Opt(args, "--out") is { } output)
+        {
+            svc.Export(scene, output);
+            Console.WriteLine($"3D model written: {output} ({new FileInfo(output).Length:N0} B)");
+        }
+        if (args.Contains("--save")) { await store.SaveAsync(p, args[1]); Console.WriteLine("3D layout stored in the project."); }
+        return clashes.Any(c => c.Kind == DND.Electrical.ThreeD.ClashKind.Hard) ? 1 : 0;
+    }
+
     private static IReadOnlyList<ExportResult> Write(string path, string content, string kind)
     {
         File.WriteAllText(path, content);
@@ -242,6 +266,7 @@ public static class Program
                                    [--out <path>] [--sheet <n>] [--reports bom,wires,...] [--lang en|fr]
               dnd-electrical archive <project.dndx> <package.dndpkg>
               dnd-electrical import <package.dndpkg> <project.dndx>
+              dnd-electrical model3d <project.dndx> [--cabinet <tag>] [--out <file.glb|.gltf|.stl>] [--save]
               dnd-electrical symbols [--search <text>] | symbols export <file.json>
               dnd-electrical calc current|power|voltage-drop|cable|short-circuit|transformer|motor [options]
               dnd-electrical license status|evaluation|install <file.dndlic>|request <licenceId> [file]|remove

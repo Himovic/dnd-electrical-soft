@@ -171,8 +171,13 @@ public sealed class DemoProjectFactory(SchematicService schematic)
         PlaceDevice(p, cab, rail2, feeder.Overload!, 5);
         PlaceDevice(p, cab, rail2, g1, 5);
         CabinetLayoutService.PlaceOnRail(cab, rail3, new CabinetItem { Kind = CabinetItemKind.TerminalStrip, Name = "-X1", Width = 4 * 5.2, Height = 45, Depth = 40, PartNumber = "DEMO-TB-2.5" });
+        // Door-mounted pilot devices in one row, 60 mm pitch (22 mm units with 30 mm bezels; fictional demo dimensions).
+        var doorX = 120.0;
         foreach (var lamp in new[] { h1, h2, start, stop, s0 })
-            cab.Items.Add(new CabinetItem { Kind = CabinetItemKind.Device, Face = CabinetFace.Door, DeviceId = lamp.DeviceId, Width = 30, Height = 30, Depth = 45, X = 100, Y = 400 });
+        {
+            cab.Items.Add(new CabinetItem { Kind = CabinetItemKind.Device, Face = CabinetFace.Door, DeviceId = lamp.DeviceId, Width = 30, Height = 30, Depth = 45, X = doorX, Y = 600 });
+            doorX += 60;
+        }
 
         Finish(p);
         return p;

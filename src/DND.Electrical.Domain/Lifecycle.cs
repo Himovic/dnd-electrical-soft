@@ -126,3 +126,17 @@ public sealed class CommissioningRecord
     public DateTimeOffset? Date { get; set; }
     public string Remarks { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// Stored 3D layout (cabinet, room, plant area or tray network). The scene itself is serialised by the 3D module;
+/// objects reference engineering objects by device identity.
+/// </summary>
+public sealed class Layout3DDocument
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = "3D layout";
+    public string Kind { get; set; } = "Cabinet";
+    public Guid? CabinetId { get; set; }
+    public string SceneJson { get; set; } = "{}";
+    public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
+}

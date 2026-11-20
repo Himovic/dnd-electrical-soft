@@ -3,6 +3,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 dotnet build DND-Electrical-Engineering-Suite.sln -c "${CONFIGURATION:-Release}"
-for suite in UnitTests IntegrationTests UIAutomationTests; do
+for suite in UnitTests IntegrationTests UIAutomationTests LicensingTests; do
   dotnet test "tests/DND.Electrical.$suite" -c "${CONFIGURATION:-Release}" --no-build
 done

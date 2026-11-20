@@ -1,6 +1,19 @@
 # Changelog
 
-All notable changes to **D&D Electrical Engineering Suite** (© 2026 D&D | Data&Development).
+All notable changes to **D&D Electrical & Automation Engineering Suite** (© 2026 D&D | Data&Development).
+
+## [0.5.0] – unreleased (in development)
+
+### Added
+- Rebranding to D&D Electrical & Automation Engineering Suite (short name D&D Engineering Suite).
+- Commercial modular licensing: ECDSA P-256 signed licences, modules (ELEC, AUTO, POWER, 3D, BIM, INFRA, TWIN, AI, DOCS, CATALOG, PROJECT, INTEGRATION), device binding, online/offline activation, grace period, revocation list, floating seat leases, clock-rollback detection, service-level enforcement, read-only mode without ELEC; licence server with administration portal; `dnd-license` issuing tool. See LICENSING.md.
+- PROJECT module: lifecycle phase, members and roles, tasks, milestones, issue register, approvals (role check, four-eyes principle), comments, document register, maintenance and commissioning records.
+- Unified engineering object: cross-representation view keyed by the device identity, conflict detection between representations and audited synchronisation on explicit confirmation only.
+- 3D module: cross-platform scene model (oriented boxes, trays, cylinders), 3D cabinet model generated from the 2D layout, cable tray routes with fill check, separating-axis clash and exact clearance detection with sweep-and-prune broad phase, measurement, mesh-clipped sections, exploded view, 2D↔3D synchronisation (change detection, regeneration, write-back with confirmation), glTF 2.0/GLB and STL export (validated with the Khronos glTF-Validator and trimesh), HelixToolkit-based WPF viewer with picking, `model3d` CLI command.
+- 2D cabinet check now also covers door-mounted devices.
+
+### Fixed
+- DEMO-IND-001: the five door-mounted pilot devices were all placed at the same position (found by the new 3D clash detection).
 
 ## [0.4.0] – 2026-11-19
 

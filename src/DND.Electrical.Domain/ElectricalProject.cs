@@ -46,6 +46,7 @@ public sealed class ElectricalProject
     public List<DocumentRegisterEntry> DocumentRegister { get; set; } = new();
     public List<MaintenanceRecord> Maintenance { get; set; } = new();
     public List<CommissioningRecord> Commissioning { get; set; } = new();
+    public List<Layout3DDocument> Layouts3D { get; set; } = new();
 
     // ------------------------------------------------------------------ lookups
 

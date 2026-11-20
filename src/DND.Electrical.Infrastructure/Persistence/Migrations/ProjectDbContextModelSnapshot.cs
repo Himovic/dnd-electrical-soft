@@ -879,6 +879,46 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.ToTable("EngineeringIssues", (string)null);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.Layout3DDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CabinetId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Modified")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SceneJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Layouts3D", (string)null);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.MaintenanceRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1892,6 +1932,14 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("DND.Electrical.Domain.Layout3DDocument", b =>
+                {
+                    b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
+                        .WithMany("Layouts3D")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DND.Electrical.Domain.MaintenanceRecord", b =>
                 {
                     b.HasOne("DND.Electrical.Domain.ElectricalProject", null)
@@ -2047,6 +2095,8 @@ namespace DND.Electrical.Infrastructure.Persistence.Migrations
                     b.Navigation("DocumentRegister");
 
                     b.Navigation("Issues");
+
+                    b.Navigation("Layouts3D");
 
                     b.Navigation("Loads");
 

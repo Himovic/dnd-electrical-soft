@@ -77,7 +77,16 @@ public static class CabinetLayoutService
                     && ra.Inflate(cabinet.ClearanceMm - 1e-6).Overlaps(rb))
                     issues.Add(new("Warning", $"{Label(ia)} and {Label(ib)} are closer than the {cabinet.ClearanceMm:0} mm clearance.", ia.Id, ib.Id));
             }
-        foreach (var dup in items.Where(i => i.DeviceId is not null).GroupBy(i => i.DeviceId).Where(g => g.Count() > 1))
+        // Door-mounted devices (pilot lights, push buttons, meters): must fit on the door and must not overlap.
+        var door = new Rect2(0, 0, cabinet.Width, cabinet.Height);
+        var doorItems = cabinet.Items.Where(i => i.Face == CabinetFace.Door).ToList();
+        foreach (var i in doorItems)
+            if (!door.Contains(Bounds(i))) issues.Add(new("Error", $"{Label(i)} extends outside the door.", i.Id));
+        for (int a = 0; a < doorItems.Count; a++)
+            for (int b = a + 1; b < doorItems.Count; b++)
+                if (Bounds(doorItems[a]).Overlaps(Bounds(doorItems[b])))
+                    issues.Add(new("Error", $"{Label(doorItems[a])} collides with {Label(doorItems[b])} on the door.", doorItems[a].Id, doorItems[b].Id));
+        foreach (var dup in cabinet.Items.Where(i => i.DeviceId is not null).GroupBy(i => i.DeviceId).Where(g => g.Count() > 1))
             foreach (var i in dup.Skip(1)) issues.Add(new("Warning", $"Device placed more than once ({Label(i)}).", i.Id));
         return issues;
     }

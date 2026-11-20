@@ -379,3 +379,97 @@ public class ProjectManagementWorkflowTests
         Assert.DoesNotContain(h.Dialogs.Shown, v => v is ProjectManagementViewModel);
     }
 }
+
+public class ThreeDWorkflowTests
+{
+    [Fact]
+    public async Task Three_d_window_generates_cabinet_selects_from_schematic_and_exports()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-CAB-004");
+        var p = h.Main.Session!.Project;
+        h.Main.Open3DCommand.Execute(null);
+        var vm = Assert.IsType<ThreeDViewModel>(h.Dialogs.Shown.Last());
+        Assert.Null(vm.Scene);
+
+        vm.GenerateFromCabinetCommand.Execute(null);
+        Assert.NotNull(vm.Scene);
+        Assert.Single(p.Layouts3D);
+        Assert.Contains("No clashes", vm.Findings.Last());
+        Assert.NotEmpty(vm.RenderItems);
+        var before = vm.RenderItems.Count;
+
+        // Section clips geometry and produces outline lines.
+        vm.SectionAxis = "X"; vm.SectionOffset = 400; vm.SectionEnabled = true;
+        Assert.NotEmpty(vm.SectionLines);
+        Assert.All(vm.RenderItems, r => Assert.All(r.Mesh.Positions, q => Assert.True(q.X <= 400 + 1e-6)));
+        vm.SectionEnabled = false;
+        vm.ShowEnclosure = false;
+        Assert.Equal(before - 6, vm.RenderItems.Count);
+
+        // Selecting a device in 3D and measuring.
+        var item = p.Cabinets[0].Items.First(i => i.DeviceId is not null);
+        vm.SelectEngineeringObject(item.DeviceId!.Value);
+        Assert.Equal(item.Id, vm.SelectedObject!.Object.Id);
+        Assert.Contains(vm.RenderItems, r => r.Selected && r.SceneObjectId == item.Id);
+        vm.MeasureTarget = vm.Objects.First(o => o.Object.Kind == DND.Electrical.ThreeD.SceneObjectKind.Door);
+        Assert.Contains("clear distance", vm.Measurement);
+
+        // Show in schematic navigates to the device occurrence.
+        vm.ShowInSchematicCommand.Execute(null);
+        Assert.NotNull(h.Main.ActiveDocument);
+
+        // Re-opening the 3D window with the device selected focuses it.
+        h.Main.Open3DCommand.Execute(null);
+        var focused = Assert.IsType<ThreeDViewModel>(h.Dialogs.Shown.Last());
+        Assert.NotNull(focused.Scene);
+
+        // Moving in 3D with confirmation writes back to the 2D layout.
+        var x0 = item.X;
+        h.Dialogs.Prompts.Enqueue("10,0,0");
+        h.Dialogs.ConfirmAnswer = true;
+        vm.MoveSelectedCommand.Execute(null);
+        Assert.Equal(x0 + 10, item.X, 6);
+
+        var path = h.PathFor("cab.glb");
+        h.Dialogs.SavePaths.Enqueue(path);
+        vm.ExportCommand.Execute("glb");
+        Assert.True(new FileInfo(path).Length > 1000);
+    }
+
+    [Fact]
+    public async Task Tray_routes_and_equipment_are_added_from_text_input_and_checked()
+    {
+        using var h = new UiHarness();
+        await h.Main.OpenDemoCommand.ExecuteAsync("DEMO-IND-001");
+        h.Main.Open3DCommand.Execute(null);
+        var vm = Assert.IsType<ThreeDViewModel>(h.Dialogs.Shown.Last());
+        h.Dialogs.Prompts.Enqueue("Pump room");
+        vm.NewPlantLayoutCommand.Execute(null);
+        Assert.Equal("Pump room", vm.Scene!.Name);
+        h.Dialogs.Prompts.Enqueue("TR-01; 300×60; 0,0,2500 / 4000,0,2500");
+        vm.AddTrayRouteCommand.Execute(null);
+        Assert.Contains(vm.Findings, f => f.StartsWith("TR-01: 4 m"));
+        h.Dialogs.Prompts.Enqueue("-M1; 400×300×300; 2000,0,2500");
+        vm.AddEquipmentCommand.Execute(null);
+        Assert.NotNull(vm.Scene.Objects.Single().ObjectId); // linked to the existing device -M1
+        vm.CheckClashesCommand.Execute(null);
+        Assert.Contains(vm.Findings, f => f.StartsWith("Clash:"));
+        h.Dialogs.Prompts.Enqueue("garbage");
+        vm.AddEquipmentCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Log, l => l.StartsWith("error:"));
+        Assert.Single(vm.Scene.Objects);
+    }
+
+    [Fact]
+    public async Task Three_d_requires_the_3d_module()
+    {
+        using var h = new UiHarness();
+        var limited = DND.Electrical.TestSupport.TestLicensing.Create(Path.Combine(h.Folder, "limited"), DND.Electrical.Licensing.EngineeringModule.ELEC);
+        var main = new MainViewModel(h.Services with { Licensing = limited });
+        await main.OpenDemoCommand.ExecuteAsync("DEMO-CAB-004");
+        main.Open3DCommand.Execute(null);
+        Assert.Contains(h.Dialogs.Shown, v => v is ModuleLockedViewModel m && m.Code == "3D");
+        Assert.DoesNotContain(h.Dialogs.Shown, v => v is ThreeDViewModel);
+    }
+}

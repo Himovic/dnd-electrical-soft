@@ -3,7 +3,7 @@ param([string]$Configuration = "Release")
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 dotnet build DND-Electrical-Engineering-Suite.sln -c $Configuration
-foreach ($suite in "UnitTests", "IntegrationTests", "UIAutomationTests") {
+foreach ($suite in "UnitTests", "IntegrationTests", "UIAutomationTests", "LicensingTests") {
     dotnet test "tests/DND.Electrical.$suite" -c $Configuration --no-build
     if ($LASTEXITCODE -ne 0) { throw "Tests failed: $suite" }
 }
