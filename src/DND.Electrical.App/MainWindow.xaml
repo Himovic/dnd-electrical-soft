@@ -147,6 +147,7 @@
                     </StackPanel></GroupBox>
                     <GroupBox Header="Data" Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE80A;" Content="Engineering data" Command="{Binding OpenEngineeringDataCommand}" ToolTip="BOM, cables, terminals, PLC I/O, motors, loads, cabinet layout"/>
+                        <Button Style="{StaticResource RibbonButton}" Tag="&#xE71B;" Content="Integrations" Command="{Binding OpenIntegrationsCommand}" ToolTip="ERP BOM file drop, CMMS asset register, webhook"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE9D9;" Content="Digital twin" Command="{Binding OpenTwinCommand}" ToolTip="Live values from Modbus TCP, MQTT or the simulator, alarms and trends"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE9F5;" Content="Automation" Command="{Binding OpenAutomationCommand}" ToolTip="Instruments, control loops, alarms, cause and effect matrices, control system architecture"/>
                         <Button Style="{StaticResource RibbonButton}" Tag="&#xE945;" Content="PowerStudio" Command="{Binding OpenPowerStudioCommand}" ToolTip="D&amp;D PowerStudio: load flow, IEC 60909 short circuit, protection coordination, harmonic scan"/>

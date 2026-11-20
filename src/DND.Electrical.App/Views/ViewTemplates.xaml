@@ -427,6 +427,34 @@
         </TabControl>
     </DataTemplate>
 
+    <!-- ============================== Integrations ============================== -->
+    <DataTemplate DataType="{x:Type vm:IntegrationViewModel}">
+        <DockPanel Margin="8">
+            <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Log}" Height="140" Margin="0,8,0,0"/>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
+                <DataGrid ItemsSource="{Binding Connectors}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Connector" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Text="{Binding Selected.Description}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Selected.TargetHint}" Style="{StaticResource FormLabel}"/>
+                    <TextBox Text="{Binding Target, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="Bearer token (webhook, optional)" Style="{StaticResource FormLabel}"/>
+                    <TextBox Text="{Binding Token}"/>
+                    <TextBlock Text="Signing secret (webhook HMAC, optional)" Style="{StaticResource FormLabel}"/>
+                    <TextBox Text="{Binding SigningSecret}"/>
+                    <Button Content="Run export" Command="{Binding RunCommand}" IsEnabled="{Binding CanRun}" Style="{StaticResource AccentButton}" Margin="0,10,0,0" HorizontalAlignment="Left"/>
+                    <TextBlock Style="{StaticResource Subtle}" TextWrapping="Wrap" Margin="0,8,0,0" Text="Planned connectors are listed for transparency and cannot be run in this version."/>
+                </StackPanel>
+            </Grid>
+        </DockPanel>
+    </DataTemplate>
+
     <!-- ============================== Digital twin ============================== -->
     <DataTemplate DataType="{x:Type vm:TwinViewModel}">
         <DockPanel Margin="6">

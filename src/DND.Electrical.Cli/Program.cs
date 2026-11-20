@@ -100,6 +100,14 @@ public static class Program
                     foreach (var s in library.Search(Opt(args, "--search")))
                         Console.WriteLine($"{s.Id,-22} {s.Category,-15} {s.Role,-15} {s.Name}");
                     return 0;
+                case "integrate":
+                    {
+                        var p = await store.LoadAsync(args[1]);
+                        var r = await new IntegrationService(licensing).RunAsync(Opt(args, "--connector") ?? "", p, new ConnectorSettings(Opt(args, "--target") ?? "", Opt(args, "--token"), Opt(args, "--signing-secret")));
+                        Console.WriteLine((r.Success ? "OK " : "FAILED ") + r.Message);
+                        foreach (var o in r.Outputs) Console.WriteLine("  " + o);
+                        return r.Success ? 0 : 1;
+                    }
                 case "power":
                     return await Power(args, store, new PowerStudioService(licensing));
                 case "model3d":
@@ -324,6 +332,7 @@ public static class Program
                                    [--out <path>] [--sheet <n>] [--reports bom,wires,...] [--lang en|fr]
               dnd-electrical archive <project.dndx> <package.dndpkg>
               dnd-electrical import <package.dndpkg> <project.dndx>
+              dnd-electrical integrate <project.dndx> --connector erp-bom-file|cmms-assets|webhook --target <folder|url> [--token <t>] [--signing-secret <s>]
               dnd-electrical power <network.json|project.dndx|sample:ieee14|sample:demo> [--study lf|sc|prot|harm|all] [--out <report.txt>] [--tcc <chart.svg>]
               dnd-electrical model3d <project.dndx> [--cabinet <tag>] [--out <file.glb|.gltf|.stl>] [--ifc <file.ifc>] [--save]
               dnd-electrical symbols [--search <text>] | symbols export <file.json>

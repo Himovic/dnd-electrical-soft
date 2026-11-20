@@ -16,6 +16,10 @@ All notable changes to **D&D Electrical & Automation Engineering Suite** (© 202
 - Industry templates: data center, solar PV plant, railway station, extended oil and gas.
 - Calculators: UPS redundancy (N…2N+1), UPS battery autonomy (energy method), PUE, PV string sizing.
 - Five new demonstration projects: DEMO-MFG-006 Manufacturing, DEMO-RAIL-007 Railway, DEMO-DC-008 Data Center, DEMO-OG-009 Oil & Gas, DEMO-PV-010 Solar (fictional data, each with schematics, loads, calculations, PowerStudio network, control architecture and project lifecycle data).
+- TWIN module: Modbus TCP client (functions 0x01–0x04, 0x06, 0x10), MQTT subscriber (MQTTnet), simulator with mandatory SIMULATED flagging, twin engine with history and live alarm evaluation, Digital twin window.
+- BIM module: IFC4 export/import through xBIM with engineering identities in a property set; verified with IfcOpenShell.
+- AI module: Claude provider (official Anthropic SDK, structured output, server-side refusal fallbacks), opt-in project data sharing, encrypted API key storage, accept/reject per proposal, AI interaction audit trail stored in the project.
+- INTEGRATION module: connector architecture with ERP BOM file drop, CMMS asset register and HMAC-signed webhook; planned connectors listed but not executable; `integrate` CLI command.
 - 2D cabinet check now also covers door-mounted devices.
 
 ### Fixed
